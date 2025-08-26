@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>영어 단어 앱 - 최소 버전</title>
+  <title>영어 단어 앱 - MVP+</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header>
-    <h1>영어 단어 앱 (MVP)</h1>
-    <p>단어 등록 → 카드 보기 → 퀴즈는 다음 단계</p>
+    <h1>영어 단어 앱 (MVP+)</h1>
+    <p>단어 등록 → 카드 보기 → <strong>발음</strong> / <strong>백업·복원</strong> / <strong>퀴즈</strong></p>
   </header>
 
   <main>
+    <!-- 입력 -->
     <section class="card">
       <h2>단어 등록</h2>
       <form id="wordForm">
@@ -28,11 +29,14 @@
           <label>예문</label>
           <input id="example" placeholder="I like an apple." />
         </div>
-        <button type="submit">추가</button>
-        <button type="button" id="clearAll" class="ghost">전체삭제</button>
+        <div class="row gap">
+          <button type="submit">추가</button>
+          <button type="button" id="clearAll" class="ghost">전체삭제</button>
+        </div>
       </form>
     </section>
 
+    <!-- 목록 -->
     <section class="card">
       <h2>단어 카드</h2>
       <div class="controls">
@@ -42,14 +46,43 @@
           <option value="alpha_asc">단어 A→Z</option>
           <option value="alpha_desc">단어 Z→A</option>
         </select>
+
+        <!-- 새 기능 버튼들 -->
+        <button id="btnExport" type="button" class="ghost">백업(Export)</button>
+        <label class="filebtn ghost">
+          복원(Import)
+          <input id="fileImport" type="file" accept="application/json" hidden />
+        </label>
+        <button id="btnQuiz" type="button" class="accent">퀴즈 시작</button>
       </div>
+
       <ul id="wordList" class="grid"></ul>
     </section>
   </main>
 
   <footer>
-    <small>© 2025 English Word App (MVP)</small>
+    <small>© 2025 English Word App</small>
   </footer>
+
+  <!-- 퀴즈 모달 -->
+  <div id="quizModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head">
+        <strong>퀴즈</strong>
+        <button id="quizClose" class="ghost sm">닫기</button>
+      </div>
+      <div class="quiz-stat">
+        <span id="qCount">0/0</span>
+        <span id="qScore">점수 0</span>
+      </div>
+      <div id="qWord" class="qword">—</div>
+      <div id="qChoices" class="choices"></div>
+      <div class="quiz-actions">
+        <button id="qNext" class="accent" disabled>다음</button>
+        <button id="qRestart" class="ghost sm">처음부터</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/static/app.js"></script>
 </body>
