@@ -1,1 +1,22 @@
-
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#f6f7fb; color:#111; }
+header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #eaeaea; position: sticky; top:0; }
+h1 { margin: 0 0 4px; font-size: 20px; }
+main { max-width: 920px; margin: 20px auto; padding: 0 16px; }
+.card { background:#fff; border:1px solid #eee; border-radius: 14px; padding:16px; margin-bottom:16px; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+.card h2 { margin: 0 0 12px; font-size: 18px; }
+.row { display:flex; gap:12px; margin-bottom:10px; align-items:center; }
+.row label { width:80px; color:#555; }
+.row input { flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:10px; }
+button { padding:10px 14px; border:none; border-radius:10px; background:#2d6cdf; color:#fff; cursor:pointer; }
+button.ghost { background:#eee; color:#333; }
+.controls { display:flex; gap:10px; margin-bottom: 10px; }
+.controls input, .controls select { padding:10px 12px; border:1px solid #ddd; border-radius:10px; }
+.grid { list-style:none; padding:0; margin:0; display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px; }
+.word-card { border:1px solid #eee; border-radius:12px; padding:12px; background:#fafafa; }
+.word-card h3 { margin:0 0 6px; font-size:16px; }
+.word-card p { margin:2px 0; color:#444; font-size:14px; }
+.word-card .meta { font-size:12px; color:#888; margin-top:6px; display:flex; justify-content:space-between; }
+.word-card .actions { display:flex; gap:6px; margin-top:8px; }
+.word-card .actions button { padding:6px 8px; border-radius:8px; font-size:12px; }
+footer { text-align:center; padding:20px; color:#888; }
