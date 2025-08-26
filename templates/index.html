@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>영어 단어 앱 - MVP+</title>
+  <title>영어 단어 앱 - PWA + 대량등록</title>
+  <meta name="theme-color" content="#2d6cdf" />
+  <link rel="manifest" href="/static/manifest.json" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header>
-    <h1>영어 단어 앱 (MVP+)</h1>
-    <p>단어 등록 → 카드 보기 → <strong>발음</strong> / <strong>백업·복원</strong> / <strong>퀴즈</strong></p>
+    <h1>영어 단어 앱 (PWA + Bulk)</h1>
+    <p>등록/카드/퀴즈/통계 + <strong>앱설치</strong> + <strong>대량 등록</strong>(텍스트/이미지 OCR)</p>
   </header>
 
   <main>
@@ -32,6 +34,7 @@
         <div class="row gap">
           <button type="submit">추가</button>
           <button type="button" id="clearAll" class="ghost">전체삭제</button>
+          <button type="button" id="btnBulk" class="accent">대량 등록</button>
         </div>
       </form>
     </section>
@@ -47,13 +50,13 @@
           <option value="alpha_desc">단어 Z→A</option>
         </select>
 
-        <!-- 새 기능 버튼들 -->
-        <button id="btnExport" type="button" class="ghost">백업(Export)</button>
+        <button id="btnExport" type="button" class="ghost">백업</button>
         <label class="filebtn ghost">
-          복원(Import)
+          복원
           <input id="fileImport" type="file" accept="application/json" hidden />
         </label>
-        <button id="btnQuiz" type="button" class="accent">퀴즈 시작</button>
+        <button id="btnQuiz" type="button" class="accent">퀴즈</button>
+        <button id="btnStats" type="button" class="ghost">통계</button>
       </div>
 
       <ul id="wordList" class="grid"></ul>
@@ -84,6 +87,60 @@
     </div>
   </div>
 
+  <!-- 통계 모달 -->
+  <div id="statsModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head">
+        <strong>학습 통계</strong>
+        <button id="statsClose" class="ghost sm">닫기</button>
+      </div>
+
+      <div class="stats-overview">
+        <div class="stat-box"><div class="stat-title">총 단어</div><div id="stTotal" class="stat-num">0</div></div>
+        <div class="stat-box"><div class="stat-title">정답률</div><div id="stAcc" class="stat-num">0%</div></div>
+        <div class="stat-box"><div class="stat-title">오늘 학습</div><div id="stToday" class="stat-num">0</div></div>
+      </div>
+
+      <h3 class="mt16">취약 단어 Top 10 (정답률 낮은 순)</h3>
+      <ul id="weakList" class="weak-list"></ul>
+
+      <h3 class="mt16">최근 학습(Last 10)</h3>
+      <ul id="recentList" class="weak-list"></ul>
+    </div>
+  </div>
+
+  <!-- 대량 등록 모달 -->
+  <div id="bulkModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head">
+        <strong>대량 등록 (텍스트/이미지)</strong>
+        <button id="bulkClose" class="ghost sm">닫기</button>
+      </div>
+
+      <div class="card" style="border:none;padding:0;background:transparent;box-shadow:none;">
+        <h3>① 텍스트 붙여넣기</h3>
+        <p class="hint">한 줄에 하나: <code>단어 - 뜻 | 예문(선택)</code> 형식. 구분자는 <code>-</code> 또는 <code>:</code> 사용 가능</p>
+        <textarea id="bulkText" rows="7" placeholder="apple - 사과 | I like an apple.
+banana - 바나나
+orange: 오렌지 | I eat an orange."></textarea>
+        <div class="row gap">
+          <button id="bulkParse" type="button">미리보기</button>
+          <button id="bulkApply" type="button" class="accent" disabled>등록</button>
+        </div>
+        <ul id="bulkPreview" class="weak-list"></ul>
+      </div>
+
+      <div class="card" style="border:none;padding:0;background:transparent;box-shadow:none;">
+        <h3 class="mt16">② 이미지에서 추출(OCR)</h3>
+        <p class="hint">학습지 사진/스캔 업로드 → 텍스트로 변환 → 위 텍스트 박스로 자동 채움</p>
+        <input id="bulkImage" type="file" accept="image/*" />
+        <div id="ocrStatus" class="badge" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tesseract.js (브라우저 OCR) -->
+  <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
