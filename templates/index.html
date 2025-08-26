@@ -1,1 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>영어 단어 앱 - 최소 버전</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>영어 단어 앱 (MVP)</h1>
+    <p>단어 등록 → 카드 보기 → 퀴즈는 다음 단계</p>
+  </header>
 
+  <main>
+    <section class="card">
+      <h2>단어 등록</h2>
+      <form id="wordForm">
+        <div class="row">
+          <label>단어</label>
+          <input id="word" required placeholder="apple" />
+        </div>
+        <div class="row">
+          <label>뜻</label>
+          <input id="meaning" required placeholder="사과" />
+        </div>
+        <div class="row">
+          <label>예문</label>
+          <input id="example" placeholder="I like an apple." />
+        </div>
+        <button type="submit">추가</button>
+        <button type="button" id="clearAll" class="ghost">전체삭제</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>단어 카드</h2>
+      <div class="controls">
+        <input id="search" placeholder="검색(단어/뜻)" />
+        <select id="sort">
+          <option value="created_desc">최신 등록순</option>
+          <option value="alpha_asc">단어 A→Z</option>
+          <option value="alpha_desc">단어 Z→A</option>
+        </select>
+      </div>
+      <ul id="wordList" class="grid"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <small>© 2025 English Word App (MVP)</small>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
