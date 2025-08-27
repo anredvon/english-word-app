@@ -3,46 +3,58 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>영어 단어 앱 - PWA + 대량등록</title>
-  <meta name="theme-color" content="#2d6cdf" />
+  <title>영어 단어 앱 (PWA + 날짜별 학습)</title>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#ff6600" />
   <link rel="manifest" href="/static/manifest.json" />
+
+  <!-- 스타일 -->
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header>
-    <h1>영어 단어 앱 (PWA + Bulk)</h1>
-    <p>등록/카드/퀴즈/통계 + <strong>앱설치</strong> + <strong>대량 등록</strong>(텍스트/이미지 OCR)</p>
+    <h1>영어 단어 앱</h1>
+    <p>등록 · 카드 · 퀴즈 · 통계 &nbsp;|&nbsp; <strong>날짜별 등록/조회</strong> 지원</p>
   </header>
 
   <main>
-    <!-- 입력 -->
+    <!-- 단어 등록 -->
     <section class="card">
       <h2>단어 등록</h2>
       <form id="wordForm">
         <div class="row">
-          <label>단어</label>
-          <input id="word" required placeholder="apple" />
+          <label for="word">단어</label>
+          <input id="word" placeholder="apple" required />
         </div>
         <div class="row">
-          <label>뜻</label>
-          <input id="meaning" required placeholder="사과" />
+          <label for="meaning">뜻</label>
+          <input id="meaning" placeholder="사과" required />
         </div>
         <div class="row">
-          <label>예문</label>
+          <label for="example">예문</label>
           <input id="example" placeholder="I like an apple." />
         </div>
+        <div class="row">
+          <label for="regDate">등록일</label>
+          <input id="regDate" type="date" />
+        </div>
         <div class="row gap">
-          <button type="submit">추가</button>
-          <button type="button" id="clearAll" class="ghost">전체삭제</button>
-          <button type="button" id="btnBulk" class="accent">대량 등록</button>
+          <button type="submit" class="accent">추가</button>
         </div>
       </form>
     </section>
 
-    <!-- 목록 -->
+    <!-- 단어 목록 / 필터 -->
     <section class="card">
       <h2>단어 카드</h2>
+
       <div class="controls">
+        <!-- 날짜 필터 -->
+        <input id="filterDate" type="date" />
+        <button id="loadByDate" type="button" class="ghost">날짜 조회</button>
+
+        <!-- 검색/정렬 -->
         <input id="search" placeholder="검색(단어/뜻)" />
         <select id="sort">
           <option value="created_desc">최신 등록순</option>
@@ -50,11 +62,7 @@
           <option value="alpha_desc">단어 Z→A</option>
         </select>
 
-        <button id="btnExport" type="button" class="ghost">백업</button>
-        <label class="filebtn ghost">
-          복원
-          <input id="fileImport" type="file" accept="application/json" hidden />
-        </label>
+        <!-- 기능 버튼 -->
         <button id="btnQuiz" type="button" class="accent">퀴즈</button>
         <button id="btnStats" type="button" class="ghost">통계</button>
       </div>
@@ -74,12 +82,15 @@
         <strong>퀴즈</strong>
         <button id="quizClose" class="ghost sm">닫기</button>
       </div>
+
       <div class="quiz-stat">
         <span id="qCount">0/0</span>
         <span id="qScore">점수 0</span>
       </div>
+
       <div id="qWord" class="qword">—</div>
       <div id="qChoices" class="choices"></div>
+
       <div class="quiz-actions">
         <button id="qNext" class="accent" disabled>다음</button>
         <button id="qRestart" class="ghost sm">처음부터</button>
@@ -96,12 +107,21 @@
       </div>
 
       <div class="stats-overview">
-        <div class="stat-box"><div class="stat-title">총 단어</div><div id="stTotal" class="stat-num">0</div></div>
-        <div class="stat-box"><div class="stat-title">정답률</div><div id="stAcc" class="stat-num">0%</div></div>
-        <div class="stat-box"><div class="stat-title">오늘 학습</div><div id="stToday" class="stat-num">0</div></div>
+        <div class="stat-box">
+          <div class="stat-title">총 단어</div>
+          <div id="stTotal" class="stat-num">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-title">정답률</div>
+          <div id="stAcc" class="stat-num">0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-title">오늘 등록</div>
+          <div id="stToday" class="stat-num">0</div>
+        </div>
       </div>
 
-      <h3 class="mt16">취약 단어 Top 10 (정답률 낮은 순)</h3>
+      <h3 class="mt16">취약 단어 Top 10</h3>
       <ul id="weakList" class="weak-list"></ul>
 
       <h3 class="mt16">최근 학습(Last 10)</h3>
@@ -109,38 +129,16 @@
     </div>
   </div>
 
-  <!-- 대량 등록 모달 -->
-  <div id="bulkModal" class="modal hidden">
-    <div class="modal-body">
-      <div class="modal-head">
-        <strong>대량 등록 (텍스트/이미지)</strong>
-        <button id="bulkClose" class="ghost sm">닫기</button>
-      </div>
+  <!-- 서비스워커 등록 -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+      });
+    }
+  </script>
 
-      <div class="card" style="border:none;padding:0;background:transparent;box-shadow:none;">
-        <h3>① 텍스트 붙여넣기</h3>
-        <p class="hint">한 줄에 하나: <code>단어 - 뜻 | 예문(선택)</code> 형식. 구분자는 <code>-</code> 또는 <code>:</code> 사용 가능</p>
-        <textarea id="bulkText" rows="7" placeholder="apple - 사과 | I like an apple.
-banana - 바나나
-orange: 오렌지 | I eat an orange."></textarea>
-        <div class="row gap">
-          <button id="bulkParse" type="button">미리보기</button>
-          <button id="bulkApply" type="button" class="accent" disabled>등록</button>
-        </div>
-        <ul id="bulkPreview" class="weak-list"></ul>
-      </div>
-
-      <div class="card" style="border:none;padding:0;background:transparent;box-shadow:none;">
-        <h3 class="mt16">② 이미지에서 추출(OCR)</h3>
-        <p class="hint">학습지 사진/스캔 업로드 → 텍스트로 변환 → 위 텍스트 박스로 자동 채움</p>
-        <input id="bulkImage" type="file" accept="image/*" />
-        <div id="ocrStatus" class="badge" style="margin-top:8px;"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tesseract.js (브라우저 OCR) -->
-  <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- 앱 로직 -->
   <script src="/static/app.js"></script>
 </body>
 </html>
