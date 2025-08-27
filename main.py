@@ -162,3 +162,50 @@ def healthz():
 if __name__ == "__main__":
     # 로컬/개발 실행용
     app.run(host="0.0.0.0", port=3000, debug=True)
+
+
+@app.post("/api/words/bulk")
+def api_create_words_bulk():
+    """
+    요청 형식:
+    POST /api/words/bulk
+    {
+      "items": [
+        {"word":"apple", "meaning":"사과", "example":"I like an apple.", "registered_on":"2025-08-27"},
+        ...
+      ]
+    }
+    응답: {"ok": true, "inserted": N}
+    """
+    try:
+        data = request.get_json() or {}
+        items = data.get("items") or []
+        if not isinstance(items, list) or not items:
+            return jsonify({"ok": False, "error": "items required"}), 400
+
+        rows = []
+        import datetime
+        today_str = datetime.date.today().isoformat()
+
+        for it in items:
+            w  = (it.get("word") or "").strip()
+            m  = (it.get("meaning") or "").strip()
+            ex = (it.get("example") or "").strip()
+            reg = (it.get("registered_on") or "").strip()[:10] or today_str
+            if not w or not m:
+                continue
+            rows.append((w, m, ex, 1, reg))  # level=1 기본값
+
+        if not rows:
+            return jsonify({"ok": False, "error": "no valid rows"}), 400
+
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.executemany(
+                "INSERT INTO words (word, meaning, example, level, registered_on) VALUES (%s,%s,%s,%s,%s)",
+                rows
+            )
+            conn.commit()
+
+        return jsonify({"ok": True, "inserted": len(rows)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
