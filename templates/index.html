@@ -21,7 +21,7 @@
   <main>
     <!-- 단어 등록 -->
     <section class="card">
-      <h2>단어 등록</h2>
+      <h2>단일 단어 등록</h2>
       <form id="wordForm">
         <div class="row">
           <label for="word">단어</label>
@@ -45,8 +45,16 @@
       </form>
     </section>
 
-    <!-- 🔥 대량 등록 -->
+    <!-- 🔘 대량 등록 열기/닫기 버튼 -->
     <section class="card">
+      <div class="row gap" style="justify-content:space-between;align-items:center;">
+        <h2 style="margin:0;">대량 등록</h2>
+        <button id="toggleBulk" type="button" class="ghost">열기</button>
+      </div>
+    </section>
+
+    <!-- 🔥 대량 등록 섹션 (기본 hidden) -->
+    <section id="bulkSection" class="card hidden">
       <h2>대량 등록 (텍스트 붙여넣기)</h2>
       <p class="hint">형식: <code>단어 - 뜻 | 예문</code> (예문 생략 가능, 구분자 <code>-</code> 또는 <code>:</code>)</p>
       <textarea id="bulkInput" rows="8" placeholder="apple - 사과 | I like an apple.
@@ -58,10 +66,12 @@ orange: 오렌지 | I eat an orange."></textarea>
         <input id="bulkDate" type="date" />
       </div>
 
-      <div class="row gap" style="margin-top:8px;">
+      <div class="row gap" style="margin-top:8px;align-items:center;">
         <button id="bulkParse" type="button" class="ghost">미리보기</button>
         <button id="bulkApply" type="button" class="accent" disabled>등록</button>
         <span id="bulkStatus" class="hint"></span>
+        <!-- 로딩 스피너 -->
+        <span id="bulkSpinner" class="spinner hidden" aria-label="loading"></span>
       </div>
 
       <ul id="bulkPreview" class="weak-list" style="margin-top:10px;"></ul>
