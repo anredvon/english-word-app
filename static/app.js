@@ -13,12 +13,15 @@ const meaningEl = $("meaning");
 const exampleEl = $("example");
 const regDateEl = $("regDate");
 
+const bulkSection = $("bulkSection");
+const toggleBulk = $("toggleBulk");
 const bulkInput = $("bulkInput");
 const bulkDateEl = $("bulkDate");
 const bulkParseBtn = $("bulkParse");
 const bulkApplyBtn = $("bulkApply");
 const bulkPreview = $("bulkPreview");
 const bulkStatus = $("bulkStatus");
+const bulkSpinner = $("bulkSpinner");
 
 const filterDateEl = $("filterDate");
 const loadByDateBtn = $("loadByDate");
@@ -43,6 +46,12 @@ let bulkParsed=[];
 if (regDateEl) regDateEl.value = today();
 if (bulkDateEl) bulkDateEl.value = today();
 if (filterDateEl) filterDateEl.value = today();
+
+/* ====== 토글: 대량 등록 열기/닫기 ====== */
+toggleBulk?.addEventListener("click", ()=>{
+  const isHidden = bulkSection.classList.toggle("hidden");
+  toggleBulk.textContent = isHidden ? "열기" : "닫기";
+});
 
 /* ====== 서버에서 목록 로드 ====== */
 async function loadWords({date, q}={}){
@@ -140,38 +149,63 @@ function renderBulkPreview(list){
   bulkApplyBtn.disabled = list.length===0;
 }
 
-/* ====== 대량 등록: 미리보기/등록 ====== */
+/* ====== 대량 등록: 미리보기 ====== */
 bulkParseBtn?.addEventListener("click", ()=>{
   bulkParsed = parseBulkText(bulkInput.value);
   renderBulkPreview(bulkParsed);
   bulkStatus.textContent = bulkParsed.length ? `인식된 항목: ${bulkParsed.length}개` : `항목이 없습니다.`;
 });
 
+/* ====== 대량 등록: 등록 (배치 처리 + 스피너 + 진행률 + 에러 로깅) ====== */
 bulkApplyBtn?.addEventListener("click", async ()=>{
   if (!bulkParsed.length) return;
   const d = bulkDateEl?.value || today();
 
+  // UI 잠금 + 스피너 on
   bulkApplyBtn.disabled = true;
   bulkParseBtn.disabled = true;
-  bulkStatus.textContent = "등록 중...";
+  bulkSpinner.classList.remove("hidden");
+  bulkStatus.textContent = `등록 중... 0/${bulkParsed.length}`;
 
   let ok=0, fail=0;
-  for(const it of bulkParsed){
+
+  // ★ 속도 개선: 10개씩 배치 전송 (동시 전송은 서버 과부하/쿼터 고려하여 1배치씩 직렬 처리)
+  const BATCH_SIZE = 10;
+  for (let i=0;i<bulkParsed.length;i+=BATCH_SIZE){
+    const slice = bulkParsed.slice(i, i+BATCH_SIZE);
+
     try{
-      await jpost("/api/words", {
-        word: it.word, meaning: it.meaning, example: it.example||"",
-        level: 1, registered_on: d
+      // 각각 POST (병렬) — 실패 사유 확인을 위해 allSettled 사용
+      const results = await Promise.allSettled(
+        slice.map(it => jpost("/api/words", {
+          word: it.word, meaning: it.meaning, example: it.example||"",
+          level: 1, registered_on: d
+        }))
+      );
+      results.forEach(r => {
+        if(r.status==="fulfilled") ok++; else {
+          fail++;
+          // 실패 사유 콘솔에 출력 (PythonAnywhere Error log도 확인)
+          console.error("대량등록 실패:", r.reason);
+        }
       });
-      ok++;
-    }catch(e){ fail++; }
+    }catch(batchErr){
+      // 배치 전체가 실패한 경우
+      console.error("배치 실패:", batchErr);
+      fail += slice.length;
+    }
+
+    bulkStatus.textContent = `등록 중... ${ok+fail}/${bulkParsed.length}`;
   }
 
+  // 완료 UI
+  bulkSpinner.classList.add("hidden");
   bulkStatus.textContent = `완료: ${ok}개 등록, 실패 ${fail}개`;
   bulkInput.value=""; bulkParsed=[]; renderBulkPreview([]);
   bulkApplyBtn.disabled = true;
   bulkParseBtn.disabled = false;
 
-  // 목록 재로딩(현재 필터 유지)
+  // 목록 갱신(현재 필터 유지)
   await loadWords({date: currentFilterDate});
 });
 
@@ -268,4 +302,18 @@ btnStats?.addEventListener("click", async ()=>{
     const accPct = t? Math.round((w.correct||0)*100/t):0;
     const li=document.createElement("li"); li.className="weak-item";
     li.innerHTML=`<div><strong>${esc(w.word)}</strong> <span class="badge">${esc(w.meaning)}</span></div>
-                  <div class
+                  <div class="badge">최근: ${new Date(w.last_tested).toLocaleString()}</div>
+                  <div class="badge">정답 ${w.correct||0} / 시도 ${t} · ${accPct}%</div>`;
+    recentList.appendChild(li);
+  });
+
+  statsModal.classList.remove("hidden");
+});
+statsClose?.addEventListener("click", ()=> statsModal.classList.add("hidden"));
+
+/* ====== 최초 로드 ====== */
+currentFilterDate = filterDateEl?.value || "";
+loadWords({date: currentFilterDate}).catch(err=>{
+  console.error(err);
+  alert("목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
+});
