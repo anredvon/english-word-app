@@ -10,8 +10,8 @@ app = Flask(__name__)
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables 에 DB_PASS 등록 필요
-    "database": "anredvon$default",              # DB명 (Databases 탭에서 확인)
+    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables 에 DB_PASS 등록 권장
+    "database": "anredvon$default",
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }
@@ -19,7 +19,7 @@ def get_conn():
     return pymysql.connect(**DB)
 
 # =======================
-# 라우팅 (UI/정적 파일)
+# 라우팅 (UI/정적)
 # =======================
 @app.route("/")
 def home():
@@ -29,16 +29,15 @@ def home():
 def static_files(filename):
     return send_from_directory("static", filename)
 
-# 헬스체크
 @app.get("/healthz")
 def healthz():
     return "ok", 200
 
 # =======================
-# API: 단어 등록/조회/퀴즈/정오답/삭제/통계
+# API: 단어 등록/조회/퀴즈/정오답/통계
 # =======================
 
-# 1) 단어 등록 (단건)
+# 1) 단어 등록
 @app.post("/api/words")
 def api_create_word():
     try:
@@ -71,20 +70,9 @@ def api_create_word():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-
-# 2) 단어 대량 등록 (Bulk)
+# 2) 대량 등록
 @app.post("/api/words/bulk")
 def api_create_words_bulk():
-    """
-    요청:
-    {
-      "items": [
-        {"word":"apple","meaning":"사과","example":"I like an apple.","registered_on":"2025-08-27"},
-        ...
-      ]
-    }
-    응답: {"ok": true, "inserted": N}
-    """
     try:
         data = request.get_json() or {}
         items = data.get("items") or []
@@ -102,7 +90,7 @@ def api_create_words_bulk():
             reg = (it.get("registered_on") or "").strip()[:10] or today_str
             if not w or not m:
                 continue
-            rows.append((w, m, ex, 1, reg))  # level=1 기본
+            rows.append((w, m, ex, 1, reg))
 
         if not rows:
             return jsonify({"ok": False, "error": "no valid rows"}), 400
@@ -118,17 +106,16 @@ def api_create_words_bulk():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-
-# 3) 단어 목록 (검색/일자 필터)
+# 3) 단어 목록 (검색/일자 필터) ← 여기 DATE() 적용
 @app.get("/api/words")
 def api_list_words():
-    q_date = request.args.get("date")  # YYYY-MM-DD
+    q_date = request.args.get("date")
     q = (request.args.get("q") or "").strip()
 
     sql = "SELECT * FROM words"
     conds, params = [], []
     if q_date:
-        conds.append("registered_on = %s")
+        conds.append("DATE(registered_on) = %s")   # ✅ 수정
         params.append(q_date)
     if q:
         conds.append("(word LIKE %s OR meaning LIKE %s)")
@@ -142,61 +129,39 @@ def api_list_words():
         rows = cur.fetchall()
     return jsonify(rows)
 
-
-# 4) 퀴즈 풀 (일자 필터)
+# 4) 퀴즈 풀 ← 여기 DATE() 적용
 @app.get("/api/quiz")
 def api_quiz_pool():
     q_date = request.args.get("date")
     with get_conn() as conn, conn.cursor() as cur:
         if q_date:
-            cur.execute("SELECT * FROM words WHERE registered_on=%s ORDER BY id DESC", (q_date,))
+            cur.execute("SELECT * FROM words WHERE DATE(registered_on)=%s ORDER BY id DESC", (q_date,))
         else:
             cur.execute("SELECT * FROM words ORDER BY id DESC")
         rows = cur.fetchall()
     return jsonify(rows)
 
-
-# 5) 정답/오답 결과 반영
+# 5) 정답/오답
 @app.post("/api/words/<int:wid>/result")
 def api_update_result(wid):
     data = request.get_json() or {}
     is_correct = bool(data.get("correct"))
-
     with get_conn() as conn, conn.cursor() as cur:
         if is_correct:
-            cur.execute(
-                "UPDATE words SET correct = correct + 1, last_tested = NOW() WHERE id=%s",
-                (wid,),
-            )
+            cur.execute("UPDATE words SET correct = correct + 1, last_tested = NOW() WHERE id=%s", (wid,))
         else:
-            cur.execute(
-                "UPDATE words SET wrong = wrong + 1, last_tested = NOW() WHERE id=%s",
-                (wid,),
-            )
+            cur.execute("UPDATE words SET wrong = wrong + 1, last_tested = NOW() WHERE id=%s", (wid,))
         conn.commit()
     return jsonify({"ok": True})
 
-
-# 6) 단어 삭제
-@app.delete("/api/words/<int:wid>")
-def api_delete_word(wid):
-    try:
-        with get_conn() as conn, conn.cursor() as cur:
-            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
-            conn.commit()
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
-# 7) 일자별 통계
+# 6) 일자별 통계 ← 여기 DATE() 적용
 @app.get("/api/stats/daily")
 def api_stats_daily():
     d_from = request.args.get("from")
     d_to = request.args.get("to")
 
     sql = """
-      SELECT registered_on AS day,
+      SELECT DATE(registered_on) AS day,  -- ✅ 수정
              COUNT(*)       AS words,
              SUM(correct)   AS correct,
              SUM(wrong)     AS wrong
@@ -204,14 +169,14 @@ def api_stats_daily():
     """
     params, conds = [], []
     if d_from:
-        conds.append("registered_on >= %s")
+        conds.append("DATE(registered_on) >= %s")
         params.append(d_from)
     if d_to:
-        conds.append("registered_on <= %s")
+        conds.append("DATE(registered_on) <= %s")
         params.append(d_to)
     if conds:
         sql += " WHERE " + " AND ".join(conds)
-    sql += " GROUP BY registered_on ORDER BY registered_on DESC"
+    sql += " GROUP BY DATE(registered_on) ORDER BY DATE(registered_on) DESC"
 
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(sql, params)
@@ -223,9 +188,19 @@ def api_stats_daily():
 
     return jsonify(rows)
 
+# 단어 삭제
+@app.delete("/api/words/<int:wid>")
+def api_delete_word(wid):
+    try:
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
+            conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 # =======================
-# 개발 서버 실행 (로컬 전용)
+# 개발 서버 실행
 # =======================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
