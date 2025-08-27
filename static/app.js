@@ -37,8 +37,8 @@ const quizModal=$("quizModal"), quizClose=$("quizClose"), qCount=$("qCount"), qS
 const statsModal=$("statsModal"), statsClose=$("statsClose"), stTotal=$("stTotal"), stAcc=$("stAcc"), stToday=$("stToday"), weakList=$("weakList"), recentList=$("recentList");
 
 /* ====== 상태 ====== */
-let words=[];                 // 서버에서 받아온 목록
-let currentFilterDate="";     // YYYY-MM-DD
+let words=[];                 
+let currentFilterDate="";     
 let currentQuery="";
 let bulkParsed=[];
 
@@ -66,8 +66,6 @@ async function loadWords({date, q}={}){
 /* ====== 렌더 ====== */
 function render(){
   let arr = [...words];
-
-  // 검색/정렬
   const q = (searchEl?.value || "").trim().toLowerCase();
   if(q) arr = arr.filter(it => it.word.toLowerCase().includes(q) || (it.meaning||"").toLowerCase().includes(q));
   const sort = (sortEl?.value || "created_desc");
@@ -75,7 +73,6 @@ function render(){
   if(sort==="alpha_asc")   arr.sort((a,b)=> a.word.localeCompare(b.word));
   if(sort==="alpha_desc")  arr.sort((a,b)=> b.word.localeCompare(a.word));
 
-  // 카드 렌더
   listEl.innerHTML = "";
   arr.forEach(it=>{
     const total=(it.correct||0)+(it.wrong||0);
@@ -125,13 +122,12 @@ function parseBulkText(text){
   const rows = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
   const out=[];
   for(const row of rows){
-    // "word - 뜻 | 예문" 또는 "word: 뜻 | 예문"
     const [left, example=""] = row.split("|").map(s=>s.trim());
     if(!left) continue;
-    const m = left.split(/[-:]/); // - 또는 :
+    const m = left.split(/[-:]/);
     if(m.length<2) continue;
     const word = m[0].trim();
-    const meaning = m.slice(1).join("-").trim(); // 뜻에 '-' 포함 가능
+    const meaning = m.slice(1).join("-").trim();
     if(!word || !meaning) continue;
     out.push({word, meaning, example});
   }
@@ -156,57 +152,47 @@ bulkParseBtn?.addEventListener("click", ()=>{
   bulkStatus.textContent = bulkParsed.length ? `인식된 항목: ${bulkParsed.length}개` : `항목이 없습니다.`;
 });
 
-/* ====== 대량 등록: 등록 (배치 처리 + 스피너 + 진행률 + 에러 로깅) ====== */
+/* ====== 대량 등록: 등록 (Bulk API 우선) ====== */
 bulkApplyBtn?.addEventListener("click", async ()=>{
   if (!bulkParsed.length) return;
   const d = bulkDateEl?.value || today();
 
-  // UI 잠금 + 스피너 on
   bulkApplyBtn.disabled = true;
   bulkParseBtn.disabled = true;
   bulkSpinner.classList.remove("hidden");
-  bulkStatus.textContent = `등록 중... 0/${bulkParsed.length}`;
+  bulkStatus.textContent = `등록 중...`;
 
-  let ok=0, fail=0;
+  const items = bulkParsed.map(it=>({
+    word: it.word, meaning: it.meaning, example: it.example||"", registered_on: d
+  }));
 
-  // ★ 속도 개선: 10개씩 배치 전송 (동시 전송은 서버 과부하/쿼터 고려하여 1배치씩 직렬 처리)
-  const BATCH_SIZE = 10;
-  for (let i=0;i<bulkParsed.length;i+=BATCH_SIZE){
-    const slice = bulkParsed.slice(i, i+BATCH_SIZE);
-
-    try{
-      // 각각 POST (병렬) — 실패 사유 확인을 위해 allSettled 사용
+  try{
+    const res = await jpost("/api/words/bulk", { items });
+    if (!res.ok && typeof res.inserted !== "number") throw new Error(res.error || "bulk failed");
+    bulkStatus.textContent = `완료: ${res.inserted}개 등록`;
+  }catch(err){
+    console.warn("Bulk API 실패, 개별 POST로 폴백:", err);
+    let ok=0, fail=0;
+    const BATCH_SIZE = 10;
+    for (let i=0;i<bulkParsed.length;i+=BATCH_SIZE){
+      const slice = bulkParsed.slice(i, i+BATCH_SIZE);
       const results = await Promise.allSettled(
         slice.map(it => jpost("/api/words", {
           word: it.word, meaning: it.meaning, example: it.example||"",
           level: 1, registered_on: d
         }))
       );
-      results.forEach(r => {
-        if(r.status==="fulfilled") ok++; else {
-          fail++;
-          // 실패 사유 콘솔에 출력 (PythonAnywhere Error log도 확인)
-          console.error("대량등록 실패:", r.reason);
-        }
-      });
-    }catch(batchErr){
-      // 배치 전체가 실패한 경우
-      console.error("배치 실패:", batchErr);
-      fail += slice.length;
+      results.forEach(r => { if(r.status==="fulfilled") ok++; else { fail++; console.error("대량등록 실패:", r.reason);} });
+      bulkStatus.textContent = `등록 중... ${ok+fail}/${bulkParsed.length}`;
     }
-
-    bulkStatus.textContent = `등록 중... ${ok+fail}/${bulkParsed.length}`;
+    bulkStatus.textContent = `완료: ${ok}개 등록, 실패 ${fail}개`;
+  }finally{
+    bulkSpinner.classList.add("hidden");
+    bulkInput.value=""; bulkParsed=[]; renderBulkPreview([]);
+    bulkApplyBtn.disabled = true;
+    bulkParseBtn.disabled = false;
+    await loadWords({date: currentFilterDate});
   }
-
-  // 완료 UI
-  bulkSpinner.classList.add("hidden");
-  bulkStatus.textContent = `완료: ${ok}개 등록, 실패 ${fail}개`;
-  bulkInput.value=""; bulkParsed=[]; renderBulkPreview([]);
-  bulkApplyBtn.disabled = true;
-  bulkParseBtn.disabled = false;
-
-  // 목록 갱신(현재 필터 유지)
-  await loadWords({date: currentFilterDate});
 });
 
 /* ====== 퀴즈 ====== */
@@ -254,8 +240,6 @@ function nextQuestion(){
       }
       qScore.textContent = `점수 ${quizState.score}`;
       qNext.disabled=false;
-
-      // 서버에 정오답 반영
       try{ await jpost(`/api/words/${correct.id}/result`, {correct: ok}); }catch(e){}
     });
     qChoices.appendChild(div);
@@ -279,7 +263,7 @@ btnStats?.addEventListener("click", async ()=>{
   const todayRow = rows.find(r=>r.day===to);
   stToday.textContent = String(todayRow? todayRow.words: 0);
 
-  const all = await jget("/api/words");  // 전체
+  const all = await jget("/api/words");
   const e1 = [...all].map(w=>{
     const t=(w.correct||0)+(w.wrong||0);
     const rate = t? (w.correct/t):0;
