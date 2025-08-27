@@ -1,269 +1,215 @@
-const KEY = "ewa_words_v1";
-function loadWords(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return[]}}
-function saveWords(words){localStorage.setItem(KEY,JSON.stringify(words))}
-function uid(){return Math.random().toString(36).slice(2,10)}
-function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+/* ====== 공통 유틸 ====== */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+function today(){ return new Date().toISOString().slice(0,10); }
+async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+async function jpost(url, body){ const r=await fetch(url,{method:"POST",headers:{ "Content-Type":"application/json" }, body:JSON.stringify(body)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
 
-/* ===== PWA 등록 ===== */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
-  });
+/* ====== 엘리먼트 ====== */
+const form = $("wordForm");
+const wordEl = $("word");
+const meaningEl = $("meaning");
+const exampleEl = $("example");
+const regDateEl = $("regDate");        // <input type="date"> (등록일)
+const filterDateEl = $("filterDate");  // <input type="date"> (조회/퀴즈 필터)
+const loadByDateBtn = $("loadByDate"); // 날짜 조회 버튼
+const listEl = $("wordList");
+const searchEl = $("search");
+const sortEl = $("sort");
+const btnQuiz = $("btnQuiz");
+const btnStats = $("btnStats");
+
+/* 퀴즈 모달 관련(기존과 동일 id 가정) */
+const quizModal=$("quizModal"), quizClose=$("quizClose"), qCount=$("qCount"), qScore=$("qScore"), qWord=$("qWord"), qChoices=$("qChoices"), qNext=$("qNext"), qRestart=$("qRestart");
+/* 통계 모달 */
+const statsModal=$("statsModal"), statsClose=$("statsClose"), stTotal=$("stTotal"), stAcc=$("stAcc"), stToday=$("stToday"), weakList=$("weakList"), recentList=$("recentList");
+
+/* ====== 상태 ====== */
+let words=[];           // 서버에서 받아온 현재 목록
+let currentFilterDate=""; // YYYY-MM-DD
+let currentQuery="";
+
+/* ====== 초기값 ====== */
+if (regDateEl) regDateEl.value = today();
+if (filterDateEl) filterDateEl.value = today();
+
+/* ====== 서버에서 목록 로드 ====== */
+async function loadWords({date, q}={}){
+  const params = new URLSearchParams();
+  if(date) params.set("date", date);
+  if(q) params.set("q", q);
+  const url = "/api/words" + (params.toString()?`?${params.toString()}`:"");
+  words = await jget(url);
+  render();
 }
 
-/* ===== 엘리먼트 ===== */
-const form=document.getElementById("wordForm");
-const wordInput=document.getElementById("word");
-const meaningInput=document.getElementById("meaning");
-const exampleInput=document.getElementById("example");
-const clearBtn=document.getElementById("clearAll");
-const listEl=document.getElementById("wordList");
-const searchEl=document.getElementById("search");
-const sortEl=document.getElementById("sort");
-const btnExport=document.getElementById("btnExport");
-const fileImport=document.getElementById("fileImport");
-const btnQuiz=document.getElementById("btnQuiz");
-const btnStats=document.getElementById("btnStats");
-const btnBulk=document.getElementById("btnBulk");
-
-/* 퀴즈 모달 */
-const quizModal=document.getElementById("quizModal");
-const quizClose=document.getElementById("quizClose");
-const qCount=document.getElementById("qCount");
-const qScore=document.getElementById("qScore");
-const qWord=document.getElementById("qWord");
-const qChoices=document.getElementById("qChoices");
-const qNext=document.getElementById("qNext");
-const qRestart=document.getElementById("qRestart");
-
-/* 통계 모달 */
-const statsModal=document.getElementById("statsModal");
-const statsClose=document.getElementById("statsClose");
-const stTotal=document.getElementById("stTotal");
-const stAcc=document.getElementById("stAcc");
-const stToday=document.getElementById("stToday");
-const weakList=document.getElementById("weakList");
-const recentList=document.getElementById("recentList");
-
-/* 대량 등록 모달 */
-const bulkModal=document.getElementById("bulkModal");
-const bulkClose=document.getElementById("bulkClose");
-const bulkText=document.getElementById("bulkText");
-const bulkParse=document.getElementById("bulkParse");
-const bulkApply=document.getElementById("bulkApply");
-const bulkPreview=document.getElementById("bulkPreview");
-const bulkImage=document.getElementById("bulkImage");
-const ocrStatus=document.getElementById("ocrStatus");
-
-/* ===== 상태 ===== */
-let words=loadWords();
-words=words.map(w=>({
-  id:w.id||uid(),
-  word:w.word, meaning:w.meaning, example:w.example||"",
-  level:Number.isFinite(w.level)?w.level:1,
-  createdAt:Number.isFinite(w.createdAt)?w.createdAt:Date.now(),
-  correct:Number.isFinite(w.correct)?w.correct:0,
-  wrong:Number.isFinite(w.wrong)?w.wrong:0,
-  lastTested:Number.isFinite(w.lastTested)?w.lastTested:0
-}));
-saveWords(words);
-
-/* ===== 렌더 ===== */
+/* ====== 렌더 ====== */
 function render(){
-  const q=(searchEl.value||"").trim().toLowerCase();
-  let arr=[...words];
-  const sort=sortEl.value;
-  if(sort==="created_desc")arr.sort((a,b)=>b.createdAt-a.createdAt);
-  if(sort==="alpha_asc")arr.sort((a,b)=>a.word.localeCompare(b.word));
-  if(sort==="alpha_desc")arr.sort((a,b)=>b.word.localeCompare(a.word));
-  if(q)arr=arr.filter(it=>it.word.toLowerCase().includes(q)||it.meaning.toLowerCase().includes(q));
-  listEl.innerHTML="";
+  let arr = [...words];
+
+  // 검색/정렬
+  const q = (searchEl?.value || "").trim().toLowerCase();
+  if(q) arr = arr.filter(it => it.word.toLowerCase().includes(q) || (it.meaning||"").toLowerCase().includes(q));
+  const sort = (sortEl?.value || "created_desc");
+  if(sort==="created_desc") arr.sort((a,b)=> (b.id||0)-(a.id||0));
+  if(sort==="alpha_asc")   arr.sort((a,b)=> a.word.localeCompare(b.word));
+  if(sort==="alpha_desc")  arr.sort((a,b)=> b.word.localeCompare(a.word));
+
+  // 카드 렌더
+  listEl.innerHTML = "";
   arr.forEach(it=>{
-    const total=it.correct+it.wrong, acc=total?Math.round((it.correct/total)*100):0;
-    const li=document.createElement("li");
+    const total=(it.correct||0)+(it.wrong||0);
+    const acc = total? Math.round((it.correct||0)*100/total):0;
+    const li = document.createElement("li");
     li.className="word-card";
     li.innerHTML=`
-      <h3>
-        ${escapeHtml(it.word)}
-        <button class="speak sm" data-id="${it.id}" data-act="speak">발음</button>
-      </h3>
-      <p><strong>뜻</strong> ${escapeHtml(it.meaning)}</p>
-      ${it.example?`<p><strong>예문</strong> ${escapeHtml(it.example)}</p>`:""}
+      <h3>${esc(it.word)}</h3>
+      <p><strong>뜻</strong> ${esc(it.meaning)}</p>
+      ${it.example?`<p><strong>예문</strong> ${esc(it.example)}</p>`:""}
       <div class="meta">
-        <span>${new Date(it.createdAt).toLocaleString()}</span>
-        <span>레벨 ${it.level} · ${acc}% (${it.correct}/${total||0})</span>
+        <span>등록일 ${esc(it.registered_on || "")}</span>
+        <span>정답률 ${acc}% (${it.correct||0}/${total||0})</span>
       </div>
-      <div class="actions">
-        <button data-id="${it.id}" data-act="inc">레벨↑</button>
-        <button data-id="${it.id}" data-act="dec">레벨↓</button>
-        <button data-id="${it.id}" data-act="reset" class="ghost">정오답 리셋</button>
-        <button data-id="${it.id}" data-act="del" class="ghost">삭제</button>
-      </div>`;
+    `;
     listEl.appendChild(li);
   });
 }
 
-/* ===== 이벤트(등록/삭제 등) ===== */
-form.addEventListener("submit",e=>{
+/* ====== 등록 ====== */
+form?.addEventListener("submit", async (e)=>{
   e.preventDefault();
-  const w=wordInput.value.trim(), m=meaningInput.value.trim(), ex=exampleInput.value.trim();
-  if(!w||!m)return;
-  words.push({id:uid(),word:w,meaning:m,example:ex,level:1,createdAt:Date.now(),correct:0,wrong:0,lastTested:0});
-  saveWords(words); form.reset(); render();
-});
-clearBtn.addEventListener("click",()=>{ if(!confirm("전체 삭제할까요?"))return; words=[]; saveWords(words); render(); });
-listEl.addEventListener("click",(e)=>{
-  const btn=e.target.closest("button"); if(!btn)return;
-  const id=btn.dataset.id, act=btn.dataset.act, idx=words.findIndex(w=>w.id===id);
-  if(act==="speak"){ const t=words.find(w=>w.id===id); if(t) speak(`${t.word}. ${t.example||""}`); return; }
-  if(idx<0)return;
-  if(act==="inc")words[idx].level++;
-  if(act==="dec")words[idx].level=Math.max(1,words[idx].level-1);
-  if(act==="reset"){words[idx].correct=0;words[idx].wrong=0;words[idx].lastTested=0;}
-  if(act==="del")words.splice(idx,1);
-  saveWords(words); render();
-});
-searchEl.addEventListener("input",render);
-sortEl.addEventListener("change",render);
-
-/* ===== 발음(TTS) ===== */
-function speak(text){try{const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=0.95;speechSynthesis.cancel();speechSynthesis.speak(u);}catch{}}
-
-/* ===== 백업/복원 ===== */
-btnExport.addEventListener("click",()=>{
-  const data=JSON.stringify(words,null,2);
-  const blob=new Blob([data],{type:"application/json"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-  const ts=new Date().toISOString().replace(/[:.]/g,"-"); a.download=`ewa-backup-${ts}.json`; a.click();
-  URL.revokeObjectURL(a.href);
-});
-fileImport.addEventListener("change",async(e)=>{
-  const f=e.target.files?.[0]; if(!f)return;
-  const text=await f.text();
-  try{
-    const arr=JSON.parse(text); if(!Array.isArray(arr))throw 0;
-    words=arr.map(x=>({id:x.id||uid(),word:String(x.word||"").trim(),meaning:String(x.meaning||"").trim(),example:String(x.example||""),level:Number.isFinite(x.level)?x.level:1,createdAt:Number.isFinite(x.createdAt)?x.createdAt:Date.now(),correct:Number.isFinite(x.correct)?x.correct:0,wrong:Number.isFinite(x.wrong)?x.wrong:0,lastTested:Number.isFinite(x.lastTested)?x.lastTested:0})).filter(x=>x.word&&x.meaning);
-    saveWords(words); render(); alert("복원 완료!");
-  }catch{ alert("JSON 형식이 올바르지 않습니다."); } finally{ e.target.value=""; }
+  const payload = {
+    word: (wordEl.value||"").trim(),
+    meaning: (meaningEl.value||"").trim(),
+    example: (exampleEl.value||"").trim(),
+    level: 1,
+    registered_on: regDateEl?.value || today(),
+  };
+  if(!payload.word || !payload.meaning){ alert("단어와 뜻을 입력하세요."); return; }
+  await jpost("/api/words", payload);
+  form.reset();
+  if (regDateEl) regDateEl.value = today();
+  await loadWords({date: currentFilterDate}); // 현재 필터 유지
 });
 
-/* ===== 퀴즈 ===== */
-let quizState={pool:[],idx:0,score:0};
-function openQuiz(){ if(words.length<4){alert("퀴즈는 단어가 최소 4개 이상 필요해요.");return;}
-  quizState.pool=shuffle([...words]); quizState.idx=0; quizState.score=0; quizModal.classList.remove("hidden"); nextQuestion();}
-function closeQuiz(){ quizModal.classList.add("hidden"); try{speechSynthesis.cancel()}catch{} }
+/* ====== 날짜 조회 ====== */
+loadByDateBtn?.addEventListener("click", async ()=>{
+  currentFilterDate = filterDateEl?.value || "";
+  await loadWords({date: currentFilterDate, q: currentQuery});
+});
+searchEl?.addEventListener("input", ()=> render());
+sortEl?.addEventListener("change", ()=> render());
+
+/* ====== 퀴즈 ====== */
+let quizState={pool:[], idx:0, score:0};
+btnQuiz?.addEventListener("click", async ()=>{
+  const d = filterDateEl?.value || "";
+  const pool = await jget(`/api/quiz${d?`?date=${d}`:""}`);
+  if(pool.length<4){ alert("퀴즈는 단어가 최소 4개 이상 필요해요."); return; }
+  quizState.pool = shuffle(pool).slice(0, 20);
+  quizState.idx=0; quizState.score=0;
+  quizModal.classList.remove("hidden");
+  nextQuestion();
+});
+quizClose?.addEventListener("click", ()=> quizModal.classList.add("hidden"));
+qRestart?.addEventListener("click", ()=>{ quizState.idx=0; quizState.score=0; nextQuestion(); });
+qNext?.addEventListener("click", ()=>{ quizState.idx++; nextQuestion(); });
+
 function nextQuestion(){
   qChoices.innerHTML=""; qNext.disabled=true;
-  const total=Math.min(quizState.pool.length,20);
-  if(quizState.idx>=total){ qWord.textContent=`완료! 최종 점수: ${quizState.score} / ${total}`; qCount.textContent=`${total}/${total}`; return; }
-  const correct=quizState.pool[quizState.idx];
-  qWord.textContent=correct.word; qCount.textContent=`${quizState.idx+1}/${total}`; qScore.textContent=`점수 ${quizState.score}`;
-  const others=shuffle(words.filter(w=>w.id!==correct.id)).slice(0,3);
-  const options=shuffle([correct,...others]);
+  const total = quizState.pool.length;
+  if(quizState.idx>=total){
+    qWord.textContent=`완료! 최종 점수: ${quizState.score} / ${total}`;
+    qCount.textContent=`${total}/${total}`;
+    return;
+  }
+  const correct = quizState.pool[quizState.idx];
+  qWord.textContent = correct.word;
+  qCount.textContent = `${quizState.idx+1}/${total}`;
+  qScore.textContent = `점수 ${quizState.score}`;
+
+  const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
+  const options = shuffle([correct, ...others]);
   options.forEach(opt=>{
-    const div=document.createElement("div"); div.className="choice"; div.textContent=opt.meaning; div.dataset.id=opt.id;
-    div.addEventListener("click",()=>{
-      Array.from(qChoices.children).forEach(el=>el.classList.add("disabled"));
-      const ok=(opt.id===correct.id);
-      if(ok){div.classList.add("correct");quizState.score++;correct.correct=(correct.correct||0)+1;}
-      else{div.classList.add("wrong");const c=Array.from(qChoices.children).find(el=>el.dataset.id===correct.id);c?.classList.add("correct");correct.wrong=(correct.wrong||0)+1;}
-      correct.lastTested=Date.now(); saveWords(words); qScore.textContent=`점수 ${quizState.score}`; qNext.disabled=false; speak(`${correct.word}. ${correct.example||""}`);
+    const div = document.createElement("div");
+    div.className="choice";
+    div.textContent = opt.meaning;
+    div.addEventListener("click", async ()=>{
+      [...qChoices.children].forEach(el=>el.classList.add("disabled"));
+      const ok = (opt.id===correct.id);
+      if(ok){ div.classList.add("correct"); quizState.score++; }
+      else{
+        div.classList.add("wrong");
+        const c = [...qChoices.children].find(el=>el.textContent===correct.meaning);
+        c && c.classList.add("correct");
+      }
+      qScore.textContent = `점수 ${quizState.score}`;
+      qNext.disabled=false;
+
+      // 서버에 정오답 반영
+      try{ await jpost(`/api/words/${correct.id}/result`, {correct: ok}); }catch(e){}
     });
     qChoices.appendChild(div);
   });
 }
-btnQuiz.addEventListener("click",openQuiz);
-quizClose.addEventListener("click",closeQuiz);
-qRestart.addEventListener("click",()=>{quizState.idx=0;quizState.score=0;nextQuestion();});
-qNext.addEventListener("click",()=>{quizState.idx++;nextQuestion();});
 
-/* ===== 통계 ===== */
-btnStats.addEventListener("click",()=>{renderStats();statsModal.classList.remove("hidden");});
-statsClose.addEventListener("click",()=>statsModal.classList.add("hidden"));
-function renderStats(){
-  const totalWords=words.length;
-  const totals=words.reduce((a,w)=>{a.correct+=(w.correct||0);a.wrong+=(w.wrong||0);return a;},{correct:0,wrong:0});
-  const attempts=totals.correct+totals.wrong; const acc=attempts?Math.round((totals.correct/attempts)*100):0;
-  const todayKey=new Date().toDateString();
-  const todayCount=words.filter(w=>w.lastTested&&new Date(w.lastTested).toDateString()===todayKey).length;
-  stTotal.textContent=String(totalWords); stAcc.textContent=`${acc}%`; stToday.textContent=String(todayCount);
-  const byWeak=[...words].map(w=>{const t=(w.correct||0)+(w.wrong||0);const rate=t?(w.correct/t):0;return {...w,tries:t,acc:rate};})
-    .sort((a,b)=>{ if(a.tries>=3&&b.tries<3)return -1; if(a.tries<3&&b.tries>=3)return 1; return a.acc-b.acc; }).slice(0,10);
-  weakList.innerHTML=""; byWeak.forEach(w=>{const t=w.tries, accPct=t?Math.round(w.acc*100):0;
+/* ====== 통계 ====== */
+btnStats?.addEventListener("click", async ()=>{
+  // 일단 최근 30일 범위
+  const to = today();
+  const from = new Date(Date.now()-29*24*60*60*1000).toISOString().slice(0,10);
+  const rows = await jget(`/api/stats/daily?from=${from}&to=${to}`);
+
+  // 상단 카드
+  const totalWords = rows.reduce((a,r)=>a+r.words,0);
+  const sumCorrect = rows.reduce((a,r)=>a+(r.correct||0),0);
+  const sumWrong = rows.reduce((a,r)=>a+(r.wrong||0),0);
+  const attempts = sumCorrect + sumWrong;
+  const acc = attempts? Math.round(sumCorrect*100/attempts):0;
+
+  stTotal.textContent = String(totalWords);
+  stAcc.textContent = `${acc}%`;
+  const todayRow = rows.find(r=>r.day===to);
+  stToday.textContent = String(todayRow? todayRow.words: 0);
+
+  // 취약 단어 Top10/최근10은 간단히 목록에서 계산
+  // (필요하면 서버에서 별도 API로 빼도 됨)
+  const all = await jget("/api/words");  // 전체
+  const e1 = [...all].map(w=>{
+    const t=(w.correct||0)+(w.wrong||0);
+    const rate = t? (w.correct/t):0;
+    return {...w, tries:t, acc:rate};
+  }).filter(w=>w.tries>=1)
+    .sort((a,b)=>a.acc-b.acc).slice(0,10);
+  weakList.innerHTML="";
+  e1.forEach(w=>{
+    const accPct = w.tries? Math.round(w.acc*100):0;
     const li=document.createElement("li"); li.className="weak-item";
-    li.innerHTML=`<div style="min-width:120px;"><div><strong>${escapeHtml(w.word)}</strong></div><div class="badge">${escapeHtml(w.meaning)}</div><div class="badge">정답 ${w.correct||0} / 시도 ${t}</div></div><div class="bar"><i style="width:${accPct}%;"></i></div><div style="min-width:48px;text-align:right;">${accPct}%</div>`;
+    li.innerHTML=`<div><strong>${esc(w.word)}</strong> <span class="badge">${esc(w.meaning)}</span></div>
+                  <div class="badge">정답 ${w.correct||0} / 시도 ${w.tries} · ${accPct}%</div>`;
     weakList.appendChild(li);
   });
-  const recent=[...words].filter(w=>w.lastTested).sort((a,b)=>b.lastTested-a.lastTested).slice(0,10);
-  recentList.innerHTML=""; recent.forEach(w=>{const t=(w.correct||0)+(w.wrong||0); const accPct=t?Math.round((w.correct/t)*100):0;
+
+  const recent=[...all].filter(w=>w.last_tested).sort((a,b)=> new Date(b.last_tested)-new Date(a.last_tested)).slice(0,10);
+  recentList.innerHTML="";
+  recent.forEach(w=>{
+    const t=(w.correct||0)+(w.wrong||0);
+    const accPct = t? Math.round((w.correct||0)*100/t):0;
     const li=document.createElement("li"); li.className="weak-item";
-    li.innerHTML=`<div style="min-width:120px;"><div><strong>${escapeHtml(w.word)}</strong></div><div class="badge">${escapeHtml(w.meaning)}</div></div><div class="badge">최근: ${new Date(w.lastTested).toLocaleString()}</div><div class="badge">정답 ${w.correct||0} / 시도 ${t} · ${accPct}%</div>`;
+    li.innerHTML=`<div><strong>${esc(w.word)}</strong> <span class="badge">${esc(w.meaning)}</span></div>
+                  <div class="badge">최근: ${new Date(w.last_tested).toLocaleString()}</div>
+                  <div class="badge">정답 ${w.correct||0} / 시도 ${t} · ${accPct}%</div>`;
     recentList.appendChild(li);
   });
-}
 
-/* ===== 대량 등록 (텍스트 파서) ===== */
-let bulkParsed=[];
-function parseBulkText(text){
-  const rows=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const out=[];
-  for(const row of rows){
-    // "word - 뜻 | 예문" 또는 "word: 뜻 | 예문"
-    const [left, ex=""] = row.split("|").map(s=>s.trim());
-    if(!left)continue;
-    const m = left.split(/[-:]/); // - 또는 :
-    if(m.length<2) continue;
-    const word=m[0].trim(); const meaning=m.slice(1).join("-").trim(); // 뜻에 -가 들어가면 보존
-    if(!word || !meaning) continue;
-    out.push({word,meaning,example:ex});
-  }
-  return out;
-}
-function renderBulkPreview(list){
-  bulkPreview.innerHTML="";
-  list.forEach(it=>{
-    const li=document.createElement("li"); li.className="weak-item";
-    li.innerHTML=`<div style="flex:1;"><strong>${escapeHtml(it.word)}</strong> — ${escapeHtml(it.meaning)} ${it.example?`<div class="badge">${escapeHtml(it.example)}</div>`:""}</div>`;
-    bulkPreview.appendChild(li);
-  });
-  bulkApply.disabled = list.length===0;
-}
-btnBulk.addEventListener("click",()=>{bulkModal.classList.remove("hidden");});
-bulkClose.addEventListener("click",()=>{bulkModal.classList.add("hidden");});
-bulkParse.addEventListener("click",()=>{
-  bulkParsed=parseBulkText(bulkText.value);
-  renderBulkPreview(bulkParsed);
+  statsModal.classList.remove("hidden");
 });
-bulkApply.addEventListener("click",()=>{
-  if(bulkParsed.length===0)return;
-  const now=Date.now();
-  bulkParsed.forEach(it=>words.push({id:uid(),word:it.word,meaning:it.meaning,example:it.example||"",level:1,createdAt:now,correct:0,wrong:0,lastTested:0}));
-  saveWords(words); render();
-  alert(`${bulkParsed.length}개 등록 완료!`);
-  bulkParsed=[]; bulkPreview.innerHTML=""; bulkText.value="";
-});
+statsClose?.addEventListener("click", ()=> statsModal.classList.add("hidden"));
 
-/* ===== 대량 등록 (이미지 → OCR → 텍스트 자동 채움) ===== */
-bulkImage.addEventListener("change", async (e)=>{
-  const file=e.target.files?.[0]; if(!file)return;
-  ocrStatus.textContent="이미지 인식 중...(해상도/조명에 따라 수 초 걸릴 수 있어요)";
-  try{
-    const { data:{ text } } = await Tesseract.recognize(file, 'eng+kor', {
-      logger:m=>{ if(m.status==="recognizing text"){ ocrStatus.textContent=`OCR 진행: ${Math.round((m.progress||0)*100)}%`; } }
-    });
-    // OCR 결과를 텍스트 박스에 넣고 미리보기 실행
-    bulkText.value = text;
-    bulkParsed = parseBulkText(text);
-    renderBulkPreview(bulkParsed);
-    ocrStatus.textContent = `OCR 완료: ${bulkParsed.length}개 항목 인식`;
-  }catch(err){
-    console.error(err);
-    ocrStatus.textContent="OCR 실패: 이미지 선명도/각도/해상도를 확인해 주세요.";
-  }finally{
-    e.target.value="";
-  }
+/* ====== 최초 로드 ====== */
+currentFilterDate = filterDateEl?.value || "";
+loadWords({date: currentFilterDate}).catch(err=>{
+  console.error(err);
+  alert("목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
 });
-
-/* ===== 초기 ===== */
-render();
