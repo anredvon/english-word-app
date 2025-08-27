@@ -10,8 +10,8 @@ app = Flask(__name__)
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables 에 DB_PASS 등록 권장
-    "database": "anredvon$default",              # 현재 사용하는 DB명
+    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables 에 DB_PASS 등록 필요
+    "database": "anredvon$default",              # DB명 (Databases 탭에서 확인)
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }
@@ -19,7 +19,7 @@ def get_conn():
     return pymysql.connect(**DB)
 
 # =======================
-# 라우팅 (UI/정적)
+# 라우팅 (UI/정적 파일)
 # =======================
 @app.route("/")
 def home():
@@ -29,13 +29,13 @@ def home():
 def static_files(filename):
     return send_from_directory("static", filename)
 
-# 헬스체크 (간단 확인용)
+# 헬스체크
 @app.get("/healthz")
 def healthz():
     return "ok", 200
 
 # =======================
-# API: 단어 등록/조회/퀴즈/정오답/통계
+# API: 단어 등록/조회/퀴즈/정오답/삭제/통계
 # =======================
 
 # 1) 단어 등록 (단건)
@@ -47,7 +47,7 @@ def api_create_word():
         meaning = (data.get("meaning") or "").strip()
         example = (data.get("example") or "").strip()
         level = int(data.get("level") or 1)
-        reg = (data.get("registered_on") or "").strip()[:10]  # YYYY-MM-DD
+        reg = (data.get("registered_on") or "").strip()[:10]
 
         if not word or not meaning:
             return jsonify({"ok": False, "error": "word/meaning required"}), 400
@@ -70,6 +70,7 @@ def api_create_word():
         return jsonify({"ok": True, "id": new_id})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 # 2) 단어 대량 등록 (Bulk)
 @app.post("/api/words/bulk")
@@ -117,6 +118,7 @@ def api_create_words_bulk():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
 # 3) 단어 목록 (검색/일자 필터)
 @app.get("/api/words")
 def api_list_words():
@@ -140,6 +142,7 @@ def api_list_words():
         rows = cur.fetchall()
     return jsonify(rows)
 
+
 # 4) 퀴즈 풀 (일자 필터)
 @app.get("/api/quiz")
 def api_quiz_pool():
@@ -151,6 +154,7 @@ def api_quiz_pool():
             cur.execute("SELECT * FROM words ORDER BY id DESC")
         rows = cur.fetchall()
     return jsonify(rows)
+
 
 # 5) 정답/오답 결과 반영
 @app.post("/api/words/<int:wid>/result")
@@ -172,7 +176,20 @@ def api_update_result(wid):
         conn.commit()
     return jsonify({"ok": True})
 
-# 6) 일자별 통계
+
+# 6) 단어 삭제
+@app.delete("/api/words/<int:wid>")
+def api_delete_word(wid):
+    try:
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
+            conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+# 7) 일자별 통계
 @app.get("/api/stats/daily")
 def api_stats_daily():
     d_from = request.args.get("from")
@@ -206,22 +223,9 @@ def api_stats_daily():
 
     return jsonify(rows)
 
+
 # =======================
-# 개발 서버 실행
+# 개발 서버 실행 (로컬 전용)
 # =======================
 if __name__ == "__main__":
-    # 로컬/개발 실행용 (PythonAnywhere는 WSGI가 app을 직접 로드)
     app.run(host="0.0.0.0", port=3000, debug=True)
-
-
-# 단어 삭제
-@app.delete("/api/words/<int:wid>")
-def api_delete_word(wid):
-    try:
-        with get_conn() as conn, conn.cursor() as cur:
-            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
-            conn.commit()
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
