@@ -10,12 +10,11 @@ app = Flask(__name__)
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables에 DB_PASS 등록 권장
-    "database": "anredvon$default",              # ← 지금 쓰는 DB명
+    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables 에 DB_PASS 등록 권장
+    "database": "anredvon$default",              # 현재 사용하는 DB명
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }
-
 def get_conn():
     return pymysql.connect(**DB)
 
@@ -30,41 +29,95 @@ def home():
 def static_files(filename):
     return send_from_directory("static", filename)
 
+# 헬스체크 (간단 확인용)
+@app.get("/healthz")
+def healthz():
+    return "ok", 200
+
 # =======================
-# API: 단어 등록/조회/퀴즈/정오답
+# API: 단어 등록/조회/퀴즈/정오답/통계
 # =======================
 
-# 단어 등록 (등록일 포함)
+# 1) 단어 등록 (단건)
 @app.post("/api/words")
 def api_create_word():
-    data = request.get_json() or {}
-    word = (data.get("word") or "").strip()
-    meaning = (data.get("meaning") or "").strip()
-    example = (data.get("example") or "").strip()
-    level = int(data.get("level") or 1)
-    reg = (data.get("registered_on") or "").strip()[:10]  # YYYY-MM-DD
+    try:
+        data = request.get_json() or {}
+        word = (data.get("word") or "").strip()
+        meaning = (data.get("meaning") or "").strip()
+        example = (data.get("example") or "").strip()
+        level = int(data.get("level") or 1)
+        reg = (data.get("registered_on") or "").strip()[:10]  # YYYY-MM-DD
 
-    if not word or not meaning:
-        return jsonify({"ok": False, "error": "word/meaning required"}), 400
+        if not word or not meaning:
+            return jsonify({"ok": False, "error": "word/meaning required"}), 400
 
-    if not reg:
+        if not reg:
+            import datetime
+            reg = datetime.date.today().isoformat()
+
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO words (word, meaning, example, level, registered_on)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (word, meaning, example, level, reg),
+            )
+            conn.commit()
+            new_id = cur.lastrowid
+
+        return jsonify({"ok": True, "id": new_id})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# 2) 단어 대량 등록 (Bulk)
+@app.post("/api/words/bulk")
+def api_create_words_bulk():
+    """
+    요청:
+    {
+      "items": [
+        {"word":"apple","meaning":"사과","example":"I like an apple.","registered_on":"2025-08-27"},
+        ...
+      ]
+    }
+    응답: {"ok": true, "inserted": N}
+    """
+    try:
+        data = request.get_json() or {}
+        items = data.get("items") or []
+        if not isinstance(items, list) or not items:
+            return jsonify({"ok": False, "error": "items required"}), 400
+
+        rows = []
         import datetime
-        reg = datetime.date.today().isoformat()
+        today_str = datetime.date.today().isoformat()
 
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO words (word, meaning, example, level, registered_on)
-            VALUES (%s, %s, %s, %s, %s)
-            """,
-            (word, meaning, example, level, reg),
-        )
-        conn.commit()
-        new_id = cur.lastrowid
+        for it in items:
+            w  = (it.get("word") or "").strip()
+            m  = (it.get("meaning") or "").strip()
+            ex = (it.get("example") or "").strip()
+            reg = (it.get("registered_on") or "").strip()[:10] or today_str
+            if not w or not m:
+                continue
+            rows.append((w, m, ex, 1, reg))  # level=1 기본
 
-    return jsonify({"ok": True, "id": new_id})
+        if not rows:
+            return jsonify({"ok": False, "error": "no valid rows"}), 400
 
-# 단어 목록 (검색/일자 필터)
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.executemany(
+                "INSERT INTO words (word, meaning, example, level, registered_on) VALUES (%s,%s,%s,%s,%s)",
+                rows
+            )
+            conn.commit()
+
+        return jsonify({"ok": True, "inserted": len(rows)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# 3) 단어 목록 (검색/일자 필터)
 @app.get("/api/words")
 def api_list_words():
     q_date = request.args.get("date")  # YYYY-MM-DD
@@ -87,7 +140,7 @@ def api_list_words():
         rows = cur.fetchall()
     return jsonify(rows)
 
-# 퀴즈용 풀 (일자 필터)
+# 4) 퀴즈 풀 (일자 필터)
 @app.get("/api/quiz")
 def api_quiz_pool():
     q_date = request.args.get("date")
@@ -99,7 +152,7 @@ def api_quiz_pool():
         rows = cur.fetchall()
     return jsonify(rows)
 
-# 정답/오답 결과 반영
+# 5) 정답/오답 결과 반영
 @app.post("/api/words/<int:wid>/result")
 def api_update_result(wid):
     data = request.get_json() or {}
@@ -119,7 +172,7 @@ def api_update_result(wid):
         conn.commit()
     return jsonify({"ok": True})
 
-# 일자별 통계
+# 6) 일자별 통계
 @app.get("/api/stats/daily")
 def api_stats_daily():
     d_from = request.args.get("from")
@@ -153,59 +206,9 @@ def api_stats_daily():
 
     return jsonify(rows)
 
-# 헬스체크 (선택)
-@app.get("/healthz")
-def healthz():
-    return "ok", 200
-
-
+# =======================
+# 개발 서버 실행
+# =======================
 if __name__ == "__main__":
-    # 로컬/개발 실행용
+    # 로컬/개발 실행용 (PythonAnywhere는 WSGI가 app을 직접 로드)
     app.run(host="0.0.0.0", port=3000, debug=True)
-
-
-@app.post("/api/words/bulk")
-def api_create_words_bulk():
-    """
-    요청 형식:
-    POST /api/words/bulk
-    {
-      "items": [
-        {"word":"apple", "meaning":"사과", "example":"I like an apple.", "registered_on":"2025-08-27"},
-        ...
-      ]
-    }
-    응답: {"ok": true, "inserted": N}
-    """
-    try:
-        data = request.get_json() or {}
-        items = data.get("items") or []
-        if not isinstance(items, list) or not items:
-            return jsonify({"ok": False, "error": "items required"}), 400
-
-        rows = []
-        import datetime
-        today_str = datetime.date.today().isoformat()
-
-        for it in items:
-            w  = (it.get("word") or "").strip()
-            m  = (it.get("meaning") or "").strip()
-            ex = (it.get("example") or "").strip()
-            reg = (it.get("registered_on") or "").strip()[:10] or today_str
-            if not w or not m:
-                continue
-            rows.append((w, m, ex, 1, reg))  # level=1 기본값
-
-        if not rows:
-            return jsonify({"ok": False, "error": "no valid rows"}), 400
-
-        with get_conn() as conn, conn.cursor() as cur:
-            cur.executemany(
-                "INSERT INTO words (word, meaning, example, level, registered_on) VALUES (%s,%s,%s,%s,%s)",
-                rows
-            )
-            conn.commit()
-
-        return jsonify({"ok": True, "inserted": len(rows)})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
