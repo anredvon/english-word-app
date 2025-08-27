@@ -212,3 +212,16 @@ def api_stats_daily():
 if __name__ == "__main__":
     # 로컬/개발 실행용 (PythonAnywhere는 WSGI가 app을 직접 로드)
     app.run(host="0.0.0.0", port=3000, debug=True)
+
+
+# 단어 삭제
+@app.delete("/api/words/<int:wid>")
+def api_delete_word(wid):
+    try:
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
+            conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
