@@ -1,1 +1,146 @@
+/* ========== Base ==========% */
+:root{
+  --bg:#f7f7fb;
+  --card:#ffffff;
+  --ink:#222;
+  --ink-2:#667085;
+  --primary:#ff6600;
+  --primary-ink:#fff;
+  --line:#e6e6ef;
+  --ok:#16a34a;
+  --bad:#ef4444;
+  --focus:#7c5cff33;
+  --shadow:0 6px 20px rgba(0,0,0,.06);
+  --radius:14px;
+  --radius-sm:10px;
+  --radius-xs:8px;
+  --space:16px;
+}
 
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font:16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  color:var(--ink); background:var(--bg);
+}
+
+/* ========== Layout ==========% */
+header,footer{max-width:1100px;margin:24px auto 0;padding:0 16px}
+header h1{margin:.2rem 0 0;font-size:1.6rem}
+header p{margin:.2rem 0 1rem;color:var(--ink-2)}
+main{max-width:1100px;margin:0 auto;padding:0 16px 40px}
+
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:22px; box-shadow:var(--shadow); margin:18px 0;
+}
+
+footer{color:var(--ink-2);text-align:center;margin-top:24px}
+
+/* ========== Form ==========% */
+form .row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+form .row label{min-width:72px;color:var(--ink-2)}
+input, select, button{
+  font:inherit; border-radius:var(--radius-xs);
+  border:1px solid var(--line); background:#fff; color:var(--ink);
+  padding:10px 12px;
+}
+input::placeholder{color:#9aa0a6}
+input:focus, select:focus, button:focus{outline:3px solid var(--focus); border-color:#c9c9f2}
+
+.row.gap{gap:8px}
+
+button{cursor:pointer; transition:.15s ease; border:1px solid var(--line)}
+button:hover{transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button.accent{
+  background:var(--primary); color:var(--primary-ink); border-color:transparent;
+}
+button.ghost{
+  background:#fff; color:var(--ink); border-color:var(--line);
+}
+button.sm{padding:6px 10px;font-size:.9rem;border-radius:8px}
+
+/* ========== Controls ==========% */
+.controls{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px
+}
+.controls input[type="date"]{padding:8px 10px}
+#search{min-width:220px}
+#sort{min-width:150px}
+
+/* ========== Grid / Cards ==========% */
+.grid{
+  list-style:none; padding:0; margin:12px 0 0;
+  display:grid; gap:12px;
+  grid-template-columns:repeat(1, minmax(0, 1fr));
+}
+@media (min-width:640px){ .grid{grid-template-columns:repeat(2, minmax(0, 1fr));} }
+@media (min-width:960px){ .grid{grid-template-columns:repeat(3, minmax(0, 1fr));} }
+
+.word-card{
+  background:#fff; border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:14px 14px 12px; box-shadow:var(--shadow);
+}
+.word-card h3{margin:0 0 6px;font-size:1.15rem}
+.word-card p{margin:6px 0;color:#374151}
+.word-card .meta{
+  display:flex; justify-content:space-between; align-items:center; margin-top:10px;
+  color:var(--ink-2); font-size:.92rem
+}
+
+/* ========== Modal (공용) ==========% */
+.modal{
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.34); padding:18px; z-index:999;
+}
+.modal.hidden{display:none}
+.modal-body{
+  width:min(720px, 96vw); background:#fff; border-radius:18px; border:1px solid var(--line);
+  box-shadow:var(--shadow); padding:18px;
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.modal-head strong{font-size:1.15rem}
+
+/* ========== Quiz ==========% */
+.quiz-stat{display:flex;gap:10px;align-items:center;color:var(--ink-2)}
+.qword{
+  margin:10px 0 12px; padding:12px; font-size:1.4rem; font-weight:700;
+  background:#fff7f1; border:1px dashed #ffd7b8; border-radius:12px; color:#3a2a20;
+}
+.choices{display:grid; gap:10px}
+.choice{
+  padding:12px; border:1px solid var(--line); border-radius:12px; background:#fff; cursor:pointer;
+  transition:background .12s ease, transform .1s ease, border .12s ease;
+}
+.choice:hover{transform:translateY(-1px)}
+.choice.correct{background:#ecfdf5; border-color:#bbf7d0}
+.choice.wrong{background:#fef2f2; border-color:#fecaca}
+.choice.disabled{pointer-events:none; opacity:.85}
+.quiz-actions{display:flex; gap:8px; margin-top:12px}
+
+/* ========== Stats ==========% */
+.stats-overview{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0 8px;
+}
+.stat-box{
+  background:#fafafa; border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center;
+}
+.stat-title{color:var(--ink-2); font-size:.9rem}
+.stat-num{font-size:1.4rem; font-weight:700}
+
+.mt16{margin-top:16px}
+.weak-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.weak-item{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+}
+.badge{
+  display:inline-block; padding:4px 8px; border-radius:999px; font-size:.85rem;
+  background:#f3f4f6; color:#374151; border:1px solid #e5e7eb;
+}
+
+/* ========== Helpers ==========% */
+@media (hover:none){
+  button:hover, .choice:hover{transform:none}
+}
