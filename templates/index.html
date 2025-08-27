@@ -94,6 +94,12 @@ orange: 오렌지 | I eat an orange."></textarea>
           <option value="alpha_desc">단어 Z→A</option>
         </select>
 
+        <select id="quizMode" title="퀴즈 유형">
+        <option value="en2ko">영어 ➜ 한국어</option>
+        <option value="ko2en">한국어 ➜ 영어</option>
+        <option value="cloze">빈칸 채우기</option>
+      </select>
+
         <!-- 기능 버튼 -->
         <button id="btnQuiz" type="button" class="accent">퀴즈</button>
         <button id="btnStats" type="button" class="ghost">통계</button>
@@ -126,6 +132,7 @@ orange: 오렌지 | I eat an orange."></textarea>
       <div class="quiz-actions">
         <button id="qNext" class="accent" disabled>다음</button>
         <button id="qRestart" class="ghost sm">처음부터</button>
+        <button id="qWrongOnly" class="ghost sm" disabled>오답만 다시</button>
       </div>
     </div>
   </div>
