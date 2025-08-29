@@ -160,3 +160,8 @@ button.sm { padding: 6px 10px; font-size: 0.9rem; }
 button.danger { border-color: #e74c3c; color: #e74c3c; }
 button.danger:hover { background: #e74c3c; color:#fff; }
 .choice.disabled { pointer-events:none; opacity:.7; }
+
+
+/* ===== Mobile-friendly modal sizing ===== */
+.modal-body{ max-height:90vh; overflow:auto; display:flex; flex-direction:column; }
+.modal-head{ position:sticky; top:0; background:#fff; z-index:2; }
