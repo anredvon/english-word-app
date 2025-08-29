@@ -44,8 +44,6 @@ const quizModal=$("quizModal"), quizClose=$("quizClose"), qCount=$("qCount"), qS
 /* 통계 모달 */
 const statsModal=$("statsModal"), statsClose=$("statsClose"), stTotal=$("stTotal"), stAcc=$("stAcc"), stToday=$("stToday"), weakList=$("weakList"), recentList=$("recentList");
 
-const sortEl = $("sort");   // index.html의 select#sort 요소 가져옴
-
 // 콤보박스 값이 바뀌면 render() 다시 실행
 sortEl?.addEventListener("change", ()=> render());
 
