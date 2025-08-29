@@ -11,7 +11,7 @@ app = Flask(__name__)
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", ""),
+    "password": os.environ.get("DB_PASS", "A601313b!"),
     "database": "anredvon$default",
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
