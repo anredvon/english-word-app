@@ -148,9 +148,9 @@ form?.addEventListener("submit", async (e)=>{
 /* ====== 날짜 조회/검색/정렬 ====== */
 loadByDateBtn?.addEventListener("click", async ()=>{
   let d = filterDateEl?.value || "";
-  if (d && d.includes("T")) d = d.split("T")[0]; // YYYY-MM-DD만 추출
+  console.log("👉 선택된 날짜:", d);   // 🔎 여기 추가
+  if (d && d.includes("T")) d = d.split("T")[0];
   currentFilterDate = d;
-  console.log("조회 날짜:", currentFilterDate);
   await loadWords({date: currentFilterDate, q: currentQuery});
 });
 
