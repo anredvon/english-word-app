@@ -117,9 +117,11 @@ def api_list_words():
 
     sql = "SELECT * FROM words"
     conds, params = [], []
+    
     if q_date:
-        conds.append("DATE(registered_on) = %s")
-        params.append(q_date[:10])
+         conds.append("DATE(registered_on) = DATE(%s)")
+         params.append(q_date[:10])  # 혹시 T포맷이면 앞 10자리만
+     
     if q:
         conds.append("(word LIKE %s OR meaning LIKE %s)")
         params.extend([f"%{q}%", f"%{q}%"])
