@@ -6,20 +6,20 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 app = Flask(__name__)
 
 # =======================
-# MySQL 연결 설정 (환경변수에서 비밀번호 불러오기)
+# MySQL 연결 설정
 # =======================
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    # 👉 환경변수 미사용, 직접 비밀번호 입력 (나중에 보안 위해 환경변수로 옮기는 걸 권장)
-    "password": "A601313b!",  
-    "database": "anredvon$default",   # 현재 사용하는 DB명
+    "password": "A601313b!",   # 지금은 직접 입력 (추후 환경변수로 교체 권장)
+    "database": "anredvon$default",
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }
 
 def get_conn():
     return pymysql.connect(**DB)
+
 
 # =======================
 # 라우팅
@@ -36,9 +36,12 @@ def static_files(filename):
 def healthz():
     return "ok", 200
 
+
 # =======================
 # API
 # =======================
+
+# 1) 단어 등록
 @app.post("/api/words")
 def api_create_word():
     try:
@@ -68,6 +71,8 @@ def api_create_word():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
+# 2) 단어 대량 등록
 @app.post("/api/words/bulk")
 def api_create_words_bulk():
     try:
@@ -103,6 +108,8 @@ def api_create_words_bulk():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+
+# 3) 단어 목록
 @app.get("/api/words")
 def api_list_words():
     q_date = request.args.get("date")
@@ -111,8 +118,8 @@ def api_list_words():
     sql = "SELECT * FROM words"
     conds, params = [], []
     if q_date:
-    conds.append("DATE(registered_on) = %s")
-    params.append(q_date[:10])
+        conds.append("DATE(registered_on) = %s")
+        params.append(q_date[:10])
     if q:
         conds.append("(word LIKE %s OR meaning LIKE %s)")
         params.extend([f"%{q}%", f"%{q}%"])
@@ -125,6 +132,8 @@ def api_list_words():
         rows = cur.fetchall()
     return jsonify(rows)
 
+
+# 4) 퀴즈 풀
 @app.get("/api/quiz")
 def api_quiz_pool():
     q_date = request.args.get("date")
@@ -136,50 +145,8 @@ def api_quiz_pool():
         rows = cur.fetchall()
     return jsonify(rows)
 
-@app.get("/api/quiz2")
-def api_quiz2():
-    mode = request.args.get("mode", "en2ko")
-    d = request.args.get("date")
 
-    sql = "SELECT id, word, meaning, example FROM words"
-    params = []
-    if d:
-        sql += " WHERE DATE(registered_on)=%s"
-        params.append(d)
-    sql += " ORDER BY RAND() LIMIT 100"
-
-    conn = get_conn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(sql, params)
-            rows = cur.fetchall()
-    finally:
-        conn.close()
-
-    if not rows:
-        return jsonify([])
-
-    out = []
-    for item in rows:
-        if mode == "en2ko":
-            q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "mc"}
-        elif mode == "ko2en":
-            q = {"id": item["id"], "question": item["meaning"], "answer": item["word"], "type": "mc"}
-        elif mode == "cloze":
-            sentence = (item.get("example") or f"{item['word']} is ...").replace(item["word"], "_____")
-            q = {"id": item["id"], "question": sentence, "answer": item["word"], "type": "mc"}
-        elif mode == "sa_en2ko":
-            q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "sa"}
-        elif mode == "sa_ko2en":
-            q = {"id": item["id"], "question": item["meaning"], "answer": item["word"], "type": "sa"}
-        elif mode == "sa_cloze":
-            sentence = (item.get("example") or f"{item['word']} is ...").replace(item["word"], "_____")
-            q = {"id": item["id"], "question": sentence, "answer": item["word"], "type": "sa"}
-        else:
-            q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "mc"}
-        out.append(q)
-    return jsonify(out)
-
+# 5) 정답/오답 반영
 @app.post("/api/words/<int:wid>/result")
 def api_update_result(wid):
     data = request.get_json() or {}
@@ -192,6 +159,8 @@ def api_update_result(wid):
         conn.commit()
     return jsonify({"ok": True})
 
+
+# 6) 일자별 통계
 @app.get("/api/stats/daily")
 def api_stats_daily():
     d_from = request.args.get("from")
@@ -225,6 +194,8 @@ def api_stats_daily():
 
     return jsonify(rows)
 
+
+# 7) 단어 삭제
 @app.delete("/api/words/<int:wid>")
 def api_delete_word(wid):
     try:
@@ -234,6 +205,7 @@ def api_delete_word(wid):
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
 
 # =======================
 # 개발 서버 실행
