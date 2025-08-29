@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>지훈의 영어 단어 앱</title>
+  <meta name="theme-color" content="#ff6600" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>영어 단어 앱</h1>
+    <p>등록 · 카드 · 퀴즈 · 통계 &nbsp;|&nbsp; <strong>날짜별 등록/조회 + 대량 등록</strong></p>
+  </header>
+  <main>
+    <section class="card">
+      <h2>단일 단어 등록</h2>
+      <form id="wordForm">
+        <div class="row"><label for="word">단어</label><input id="word" required placeholder="apple" /></div>
+        <div class="row"><label for="meaning">뜻</label><input id="meaning" required placeholder="사과" /></div>
+        <div class="row"><label for="example">예문</label><input id="example" placeholder="I like an apple." /></div>
+        <div class="row"><label for="regDate">등록일</label><input id="regDate" type="date" /></div>
+        <div class="row gap"><button type="submit" class="accent">추가</button></div>
+      </form>
+    </section>
+    <section class="card">
+      <div class="row gap" style="justify-content:space-between;align-items:center;">
+        <h2 style="margin:0;">대량 등록</h2>
+        <button id="toggleBulk" type="button" class="ghost">열기</button>
+      </div>
+    </section>
+    <section id="bulkSection" class="card hidden">
+      <h2>대량 등록 (텍스트 붙여넣기)</h2>
+      <p class="hint">형식: <code>단어 - 뜻 | 예문</code></p>
+      <textarea id="bulkInput" rows="8" placeholder="apple - 사과 | I like an apple."></textarea>
+      <div class="row" style="margin-top:10px;">
+        <label for="bulkDate">등록일</label><input id="bulkDate" type="date" />
+      </div>
+      <div class="row gap" style="margin-top:8px;align-items:center;">
+        <button id="bulkParse" type="button" class="ghost">미리보기</button>
+        <button id="bulkApply" type="button" class="accent" disabled>등록</button>
+        <span id="bulkStatus" class="hint"></span>
+        <span id="bulkSpinner" class="spinner hidden"></span>
+      </div>
+      <ul id="bulkPreview" class="weak-list" style="margin-top:10px;"></ul>
+    </section>
+    <section class="card">
+      <h2>단어 카드</h2>
+      <div class="controls">
+        <input id="filterDate" type="date" />
+        <button id="loadByDate" type="button" class="ghost">날짜 조회</button>
+        <input id="search" placeholder="검색(단어/뜻)" />
+        <select id="sort">
+          <option value="created_desc">최신 등록순</option>
+          <option value="alpha_asc">단어 A→Z</option>
+          <option value="alpha_desc">단어 Z→A</option>
+        </select>
+        <select id="quizMode" title="퀴즈 유형">
+          <option value="en2ko">영어 ➜ 한국어</option>
+          <option value="ko2en">한국어 ➜ 영어</option>
+          <option value="cloze">빈칸 채우기</option>
+          <option value="sa_en2ko">[주관식] 영어 ➜ 한국어</option>
+          <option value="sa_ko2en">[주관식] 한국어 ➜ 영어</option>
+          <option value="sa_cloze">[주관식] 빈칸 채우기</option>
+        </select>
+        <button id="btnQuiz" class="accent" type="button">퀴즈</button>
+        <button id="btnStats" class="ghost" type="button">통계</button>
+      </div>
+      <ul id="wordList" class="grid"></ul>
+    </section>
+  </main>
+  <footer><small>© 2025 English Word App</small></footer>
+
+  <div id="quizModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head"><strong>퀴즈</strong><button id="quizClose" class="ghost sm">닫기</button></div>
+      <div class="quiz-stat"><span id="qCount">0/0</span><span id="qScore">점수 0</span></div>
+      <div id="qWord" class="qword">—</div>
+      <div id="qChoices" class="choices"></div>
+      <div id="qInputWrap" class="hidden" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+        <input id="qInput" type="text" placeholder="정답을 입력하세요" style="flex:1;"><button id="qSubmit" class="accent">제출</button>
+      </div>
+      <div class="quiz-actions">
+        <button id="qNext" class="accent" disabled>다음</button>
+        <button id="qRestart" class="ghost sm">처음부터</button>
+        <button id="qWrongOnly" class="ghost sm" disabled>오답만 다시</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="statsModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head"><strong>학습 통계</strong><button id="statsClose" class="ghost sm">닫기</button></div>
+      <div class="stats-overview">
+        <div class="stat-box"><div class="stat-title">총 단어</div><div id="stTotal" class="stat-num">0</div></div>
+        <div class="stat-box"><div class="stat-title">정답률</div><div id="stAcc" class="stat-num">0%</div></div>
+        <div class="stat-box"><div class="stat-title">오늘 등록</div><div id="stToday" class="stat-num">0</div></div>
+      </div>
+      <h3 class="mt16">취약 단어 Top 10</h3><ul id="weakList" class="weak-list"></ul>
+      <h3 class="mt16">최근 학습(Last 10)</h3><ul id="recentList" class="weak-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/static/sw.js").catch(()=>{}));
+    }
+  </script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
