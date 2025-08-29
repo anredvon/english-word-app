@@ -44,7 +44,6 @@ const statsModal=$("statsModal"), statsClose=$("statsClose"), stTotal=$("stTotal
 let words=[];                 
 let currentFilterDate="";     
 let currentQuery="";
-let currentMode="date";   // "date" 또는 "search"
 let bulkParsed=[];
 let quizState = { pool:[], idx:0, score:0, wrongIds:[], mode:"en2ko" };
 
@@ -52,6 +51,7 @@ let quizState = { pool:[], idx:0, score:0, wrongIds:[], mode:"en2ko" };
 if (regDateEl) regDateEl.value = today();
 if (bulkDateEl) bulkDateEl.value = today();
 if (filterDateEl) filterDateEl.value = today();
+currentFilterDate = filterDateEl?.value || today();
 
 /* ====== 토글: 대량 등록 열기/닫기 ====== */
 toggleBulk?.addEventListener("click", ()=>{
@@ -62,8 +62,8 @@ toggleBulk?.addEventListener("click", ()=>{
 /* ====== 서버에서 목록 로드 ====== */
 async function loadWords({date, q}={}){
   const params = new URLSearchParams();
-  if(currentMode === "date" && date) params.set("date", date);
-  if(currentMode === "search" && q) params.set("q", q);
+  if(date) params.set("date", date);
+  if(q) params.set("q", q);
   const url = "/api/words" + (params.toString()?`?${params.toString()}`:"");
   words = await jget(url);
   render();
@@ -132,44 +132,29 @@ form?.addEventListener("submit", async (e)=>{
 
 /* ====== 날짜 조회 ====== */
 loadByDateBtn?.addEventListener("click", async ()=>{
-  currentMode = "date";
-  let d = filterDateEl?.value || "";
-  if (d && d.includes("T")) d = d.split("T")[0];
-  currentFilterDate = d;
-  currentQuery = "";
-
-  searchEl.disabled = true;
-  btnSearch.disabled = true;
-  filterDateEl.disabled = false;
-  loadByDateBtn.disabled = false;
-
+  currentFilterDate = filterDateEl?.value || "";
+  if (currentFilterDate && currentFilterDate.includes("T"))
+    currentFilterDate = currentFilterDate.split("T")[0];
   await loadWords({date: currentFilterDate});
 });
 
 /* ====== 검색 ====== */
 btnSearch?.addEventListener("click", async ()=>{
-  currentMode = "search";
   currentQuery = searchEl?.value || "";
-
-  filterDateEl.disabled = true;
-  loadByDateBtn.disabled = true;
-  searchEl.disabled = false;
-  btnSearch.disabled = false;
-
-  await loadWords({q: currentQuery});
+  await loadWords({date: currentFilterDate, q: currentQuery});
+  updateSearchUI();
 });
 
-searchEl?.addEventListener("keypress", async (e)=>{
-  if(e.key === "Enter"){
-    currentMode = "search";
-    currentQuery = searchEl.value;
-
+searchEl?.addEventListener("input", ()=>{
+  currentQuery = searchEl.value;
+  if(currentQuery.trim()===""){
+    // 검색어 지워짐 → 날짜조회 다시 활성화
+    filterDateEl.disabled = false;
+    loadByDateBtn.disabled = false;
+  } else {
+    // 검색어 입력중 → 날짜조회 비활성화
     filterDateEl.disabled = true;
     loadByDateBtn.disabled = true;
-    searchEl.disabled = false;
-    btnSearch.disabled = false;
-
-    await loadWords({q: currentQuery});
   }
 });
 
@@ -187,8 +172,18 @@ function speakWord(word){
   window.speechSynthesis.speak(u);
 }
 
+/* ====== UI 업데이트 ====== */
+function updateSearchUI(){
+  if(currentQuery.trim()===""){
+    filterDateEl.disabled = false;
+    loadByDateBtn.disabled = false;
+  }else{
+    filterDateEl.disabled = true;
+    loadByDateBtn.disabled = true;
+  }
+}
+
 /* ====== 최초 로드 ====== */
-currentFilterDate = filterDateEl?.value || "";
 loadWords({date: currentFilterDate}).catch(err=>{
   console.error(err);
   alert("목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
