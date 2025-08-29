@@ -11,8 +11,9 @@ app = Flask(__name__)
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", ""),  # Web 탭 Environment Variables 사용
-    "database": "anredvon$default",
+    # 👉 환경변수 미사용, 직접 비밀번호 입력 (나중에 보안 위해 환경변수로 옮기는 걸 권장)
+    "password": "A601313b!",  
+    "database": "anredvon$default",   # 현재 사용하는 DB명
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }
