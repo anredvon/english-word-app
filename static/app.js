@@ -1,8 +1,9 @@
+function escapeRegExp(str){return String(str).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 /* ====== 공통 유틸 ====== */
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
-function today(){ return new Date().toISOString().slice(0,10); }
+function today(){ const d=new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(await r.text()); return r.json(); }
 async function jpost(url, body){ const r=await fetch(url,{method:"POST",headers:{ "Content-Type":"application/json" }, body:JSON.stringify(body)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
 
@@ -35,6 +36,10 @@ const quizModeSel = $("quizMode");
 const qWrongOnly = $("qWrongOnly");
 
 /* 퀴즈 모달 */
+/* 주관식 입력 요소 */
+const qInputWrap = $("qInputWrap");
+const qInput = $("qInput");
+const qSubmit = $("qSubmit");
 const quizModal=$("quizModal"), quizClose=$("quizClose"), qCount=$("qCount"), qScore=$("qScore"), qWord=$("qWord"), qChoices=$("qChoices"), qNext=$("qNext"), qRestart=$("qRestart");
 /* 통계 모달 */
 const statsModal=$("statsModal"), statsClose=$("statsClose"), stTotal=$("stTotal"), stAcc=$("stAcc"), stToday=$("stToday"), weakList=$("weakList"), recentList=$("recentList");
@@ -233,7 +238,7 @@ btnQuiz?.addEventListener("click", async ()=>{
   quizState.mode = quizModeSel?.value || "en2ko";
 
   qWrongOnly.disabled = true;
-  quizModal.classList.remove("hidden");
+  quizModal.classList.remove("hidden"); document.body.classList.add("modal-open");
   if(qInputWrap){ qInputWrap.classList.add("hidden"); if(qInput){ qInput.value=""; qInput.disabled=false; } if(qSubmit){ qSubmit.disabled=false; } }
   nextQuestion();
 });
@@ -419,7 +424,7 @@ btnStats?.addEventListener("click", async ()=>{
     recentList.appendChild(li);
   });
 
-  statsModal.classList.remove("hidden");
+  statsModal.classList.remove("hidden"); document.body.classList.add("modal-open");
 });
 statsClose?.addEventListener("click", ()=> statsModal.classList.add("hidden"));
 
