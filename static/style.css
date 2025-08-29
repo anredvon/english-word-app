@@ -165,3 +165,10 @@ button.danger:hover { background: #e74c3c; color:#fff; }
 /* ===== Mobile-friendly modal sizing ===== */
 .modal-body{ max-height:90vh; overflow:auto; display:flex; flex-direction:column; }
 .modal-head{ position:sticky; top:0; background:#fff; z-index:2; }
+
+
+/* ==== UX improvements (appended by patch) ==== */
+body.modal-open{ overflow:hidden; }
+.modal-body{ overscroll-behavior: contain; }
+.modal-head button#statsClose,
+.modal-head button#quizClose{ padding:10px 14px; margin:-4px -6px -4px auto; }
