@@ -117,34 +117,40 @@ orange: 오렌지 | I eat an orange."></textarea>
   </footer>
 
   <!-- 퀴즈 모달 -->
-  <div id="quizModal" class="modal hidden">
-    <div class="modal-body">
-      <div class="modal-head">
-        <strong>퀴즈</strong>
-        <button id="quizClose" class="ghost sm">닫기</button>
-      </div>
+<div id="quizModal" class="modal hidden">
+  <div class="modal-body">
+    <div class="modal-head">
+      <strong>퀴즈</strong>
+      <button id="quizClose" class="ghost sm">닫기</button>
+    </div>
 
-      <div class="quiz-stat">
-        <span id="qCount">0/0</span>
-        <span id="qScore">점수 0</span>
-      </div>
+    <!-- 퀴즈 상태 -->
+    <div class="quiz-stat">
+      <span id="qCount">0/0</span>
+      <span id="qScore">점수 0</span>
+    </div>
 
-      <div id="qWord" class="qword">—</div>
-      <div id="qChoices" class="choices"></div>
+    <!-- 문제 -->
+    <div id="qWord" class="qword">—</div>
 
-      <!-- 주관식 입력 -->
-      <div id="qInputWrap" class="hidden" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
-        <input id="qInput" type="text" placeholder="정답을 입력하세요 (Apple Pencil 필기 입력 가능)" style="flex:1;">
-        <button id="qSubmit" class="accent">제출</button>
-      </div>
+    <!-- 객관식 보기 -->
+    <div id="qChoices" class="choices"></div>
 
-      <div class="quiz-actions">
-        <button id="qNext" class="accent" disabled>다음</button>
-        <button id="qRestart" class="ghost sm">처음부터</button>
-        <button id="qWrongOnly" class="ghost sm" disabled>오답만 다시</button>
-      </div>
+    <!-- 주관식 입력 (Apple Pencil 필기 입력 가능) -->
+    <div id="qInputWrap" class="hidden" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+      <input id="qInput" type="text" placeholder="정답을 입력하세요" style="flex:1;">
+      <button id="qSubmit" class="accent">제출</button>
+    </div>
+
+    <!-- 퀴즈 액션 버튼들 -->
+    <div class="quiz-actions">
+      <button id="qNext" class="accent" disabled>다음</button>
+      <button id="qRestart" class="ghost sm">처음부터</button>
+      <button id="qWrongOnly" class="ghost sm" disabled>오답만 다시</button>
     </div>
   </div>
+</div>
+
 
   <!-- 통계 모달 -->
   <div id="statsModal" class="modal hidden">
