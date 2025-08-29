@@ -128,6 +128,7 @@ def api_list_words():
     sql += " ORDER BY id DESC"
 
     with get_conn() as conn, conn.cursor() as cur:
+        print("👉 api_list_words params:", params, flush=True)
         cur.execute(sql, params)
         rows = cur.fetchall()
     return jsonify(rows)
