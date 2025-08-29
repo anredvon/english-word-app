@@ -23,25 +23,15 @@
     <section class="card">
       <h2>단일 단어 등록</h2>
       <form id="wordForm">
-        <div class="row">
-          <label for="word">단어</label>
-          <input id="word" placeholder="apple" required />
-        </div>
-        <div class="row">
-          <label for="meaning">뜻</label>
-          <input id="meaning" placeholder="사과" required />
-        </div>
-        <div class="row">
-          <label for="example">예문</label>
-          <input id="example" placeholder="I like an apple." />
-        </div>
-        <div class="row">
-          <label for="regDate">등록일</label>
-          <input id="regDate" type="date" />
-        </div>
-        <div class="row gap">
-          <button type="submit" class="accent">추가</button>
-        </div>
+       <div class="row gap">
+    <input id="regDate" type="date" />
+    <input id="word" type="text" placeholder="단어" />
+    <input id="meaning" type="text" placeholder="뜻" />
+    <button type="submit" class="accent">추가</button>
+  </div>
+  <div class="row gap">
+    <input id="example" type="text" placeholder="예문" style="flex:1;" />
+  </div>
       </form>
     </section>
 
