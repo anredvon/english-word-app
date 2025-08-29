@@ -204,3 +204,53 @@ def api_delete_word(wid):
 # =======================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
+
+
+# ===== Enhanced Quiz API (6 modes) =====
+import random
+from flask import request, jsonify
+
+@app.route("/api/quiz2")
+def api_quiz2():
+    mode = request.args.get("mode", "en2ko")
+    d = request.args.get("date")
+
+    sql = "SELECT id, word, meaning, example FROM words"
+    params = []
+    if d:
+        sql += " WHERE registered_on=%s"
+        params.append(d)
+    sql += " ORDER BY RAND() LIMIT 100"
+
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        return jsonify([])
+
+    out = []
+    for item in rows:
+        if mode == "en2ko":
+            q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "mc"}
+        elif mode == "ko2en":
+            q = {"id": item["id"], "question": item["meaning"], "answer": item["word"], "type": "mc"}
+        elif mode == "cloze":
+            sentence = (item.get("example") or f"{item['word']} is ...").replace(item["word"], "_____")
+            q = {"id": item["id"], "question": sentence, "answer": item["word"], "type": "mc"}
+        elif mode == "sa_en2ko":
+            q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "sa"}
+        elif mode == "sa_ko2en":
+            q = {"id": item["id"], "question": item["meaning"], "answer": item["word"], "type": "sa"}
+        elif mode == "sa_cloze":
+            sentence = (item.get("example") or f"{item['word']} is ...").replace(item["word"], "_____")
+            q = {"id": item["id"], "question": sentence, "answer": item["word"], "type": "sa"}
+        else:
+            # fallback: en2ko
+            q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "mc"}
+        out.append(q)
+    return jsonify(out)
