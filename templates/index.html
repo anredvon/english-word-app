@@ -17,12 +17,12 @@
     <section class="card">
       <h2>단일 단어 등록</h2>
       <form id="wordForm">
-        <div class="row">
+        <div class="row gap">
           <input id="word" placeholder="단어" required>
           <input id="meaning" placeholder="뜻" required>
           <button type="submit" class="accent">추가</button>
         </div>
-        <div class="row">
+        <div class="row gap">
           <input id="example" placeholder="예문">
           <input id="regDate" type="date">
         </div>
@@ -32,16 +32,16 @@
     <!-- 대량 등록 -->
     <section class="card">
       <h2>대량 등록</h2>
-      <button id="toggleBulk" type="button" class="ghost">열기</button>
+      <button id="toggleBulk" class="ghost">열기</button>
       <div id="bulkSection" class="hidden">
-        <textarea id="bulkInput" rows="6" placeholder="apple - 사과 | I like an apple."></textarea>
-        <input id="bulkDate" type="date">
-        <div class="row">
-          <button id="bulkParse" type="button">미리보기</button>
-          <button id="bulkApply" type="button" disabled>등록</button>
-          <span id="bulkStatus"></span>
+        <textarea id="bulkInput" placeholder="apple - 사과 | I like an apple."></textarea>
+        <div class="row gap">
+          <input id="bulkDate" type="date">
+          <button id="bulkParse" class="ghost">미리보기</button>
+          <button id="bulkApply" class="accent" disabled>등록</button>
           <span id="bulkSpinner" class="hidden">⏳</span>
         </div>
+        <p id="bulkStatus"></p>
         <ul id="bulkPreview"></ul>
       </div>
     </section>
@@ -49,77 +49,80 @@
     <!-- 단어 카드 -->
     <section class="card">
       <h2>단어 카드</h2>
-      <div class="row">
+      <div class="row gap wrap">
         <input id="filterDate" type="date">
-        <button id="loadByDate" type="button">날짜 조회</button>
+        <button id="loadByDate" class="ghost">날짜 조회</button>
         <input id="search" placeholder="검색(단어/뜻)">
-        <button id="btnSearch" type="button">검색</button>
+        <button id="btnSearch" class="ghost">검색</button>
         <select id="sort">
           <option value="created_desc">최신 등록순</option>
           <option value="alpha_asc">가나다순</option>
           <option value="alpha_desc">역순</option>
         </select>
-        <select id="voiceSelect">
-          <option value="default">기본 음성</option>
-          <option value="male">남성</option>
-          <option value="female">여성</option>
-        </select>
         <select id="quizMode">
-          <option value="en2ko">영어 ➝ 한국어</option>
-          <option value="ko2en">한국어 ➝ 영어</option>
+          <option value="en2ko">영어 ➔ 한국어</option>
+          <option value="ko2en">한국어 ➔ 영어</option>
           <option value="cloze">빈칸 채우기</option>
+          <option value="en2ko_w">영어 ➔ 한국어 : 주관식</option>
+          <option value="ko2en_w">한국어 ➔ 영어 : 주관식</option>
+          <option value="cloze_w">빈칸 채우기 : 주관식</option>
         </select>
         <button id="btnQuiz" class="accent">퀴즈</button>
-        <button id="btnStats">통계</button>
+        <button id="btnStats" class="ghost">통계</button>
       </div>
       <ul id="wordList"></ul>
     </section>
-
-    <!-- 퀴즈 모달 -->
-    <div id="quizModal" class="modal hidden">
-      <div class="modal-body">
-        <div class="modal-head">
-          <strong>퀴즈</strong>
-          <button id="quizClose" class="ghost sm">닫기</button>
-        </div>
-        <div class="quiz-stat">
-          <span id="qCount">0/0</span>
-          <span id="qScore">점수 0</span>
-        </div>
-        <div id="qWord" class="qword">—</div>
-        <div id="qChoices" class="choices"></div>
-        <div id="qInputWrap" class="hidden" style="display:flex; gap:8px; margin-top:8px;">
-          <input id="qInput" type="text" placeholder="정답 입력">
-          <button id="qSubmit" class="accent">제출</button>
-        </div>
-        <div class="quiz-actions">
-          <button id="qNext" class="accent" disabled>다음</button>
-          <button id="qRestart" class="ghost sm">처음부터</button>
-          <button id="qWrongOnly" class="ghost sm" disabled>오답만</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 통계 모달 -->
-    <div id="statsModal" class="modal hidden">
-      <div class="modal-body">
-        <div class="modal-head">
-          <strong>통계</strong>
-          <button id="statsClose" class="ghost sm">닫기</button>
-        </div>
-        <p>총 단어: <span id="stTotal"></span></p>
-        <p>정답률: <span id="stAcc"></span></p>
-        <p>오늘 등록: <span id="stToday"></span></p>
-        <h3>취약 단어 Top10</h3>
-        <ul id="weakList"></ul>
-        <h3>최근 시험 단어</h3>
-        <ul id="recentList"></ul>
-      </div>
-    </div>
   </main>
 
   <footer>
-    <p>© 2025 English Word App.</p>
+    <p>© 2025 English Word App</p>
   </footer>
+
+  <!-- 퀴즈 모달 -->
+  <div id="quizModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head">
+        <strong>퀴즈</strong>
+        <button id="quizClose" class="ghost sm">닫기</button>
+      </div>
+      <div class="quiz-stat">
+        <span id="qCount">0/0</span>
+        <span id="qScore">점수 0</span>
+      </div>
+      <div id="qWord" class="qword">—</div>
+      <div id="qChoices" class="choices"></div>
+
+      <!-- 주관식 입력 -->
+      <div id="qInputWrap" class="hidden">
+        <input id="qInput" type="text" placeholder="정답 입력 (필기 가능)">
+        <button id="qSubmit" class="accent">제출</button>
+      </div>
+
+      <div class="quiz-actions">
+        <button id="qNext" class="accent" disabled>다음</button>
+        <button id="qRestart" class="ghost sm">처음부터</button>
+        <button id="qWrongOnly" class="ghost sm" disabled>오답만 다시</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 통계 모달 -->
+  <div id="statsModal" class="modal hidden">
+    <div class="modal-body">
+      <div class="modal-head">
+        <strong>통계</strong>
+        <button id="statsClose" class="ghost sm">닫기</button>
+      </div>
+      <div>
+        <p>총 단어: <span id="stTotal">0</span></p>
+        <p>정답률: <span id="stAcc">0%</span></p>
+        <p>오늘 등록: <span id="stToday">0</span></p>
+      </div>
+      <h3>취약 단어 TOP10</h3>
+      <ul id="weakList"></ul>
+      <h3>최근 테스트</h3>
+      <ul id="recentList"></ul>
+    </div>
+  </div>
 </body>
 </html>
