@@ -1,13 +1,15 @@
+/* ===== 기본 ===== */
 body {
-  font-family: sans-serif;
+  font-family: "Segoe UI", sans-serif;
   margin: 0;
   background: #f5f5f7;
+  color: #222;
 }
 
 header {
   background: #ff6600;
   color: #fff;
-  padding: 12px;
+  padding: 16px;
   text-align: center;
 }
 
@@ -17,55 +19,199 @@ main {
   padding: 16px;
 }
 
+footer {
+  text-align: center;
+  padding: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ===== 카드 ===== */
 .card {
   background: #fff;
   padding: 16px;
   margin-bottom: 16px;
   border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+/* ===== 폼 & 입력 ===== */
 .row {
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
 }
 
+input, select, textarea, button {
+  font: inherit;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+/* ===== 버튼 ===== */
+button {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
 button.accent {
   background: #ff6600;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+}
+
+button.accent:hover {
+  background: #e05500;
 }
 
 button.ghost {
-  background: #eee;
+  background: #f0f0f0;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+}
+
+button.ghost:hover {
+  background: #e5e5e5;
 }
 
 button.danger {
   background: #ff4444;
-  color: white;
+  color: #fff;
+  border: none;
 }
 
-.hidden { display: none; }
+button.danger:hover {
+  background: #d93333;
+}
 
-/* 모달 */
+button.sm {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+/* ===== 단어 카드 ===== */
+#wordList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.word-card {
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: #fafafa;
+}
+
+.word-card h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+}
+
+.word-card p {
+  margin: 2px 0;
+}
+
+.word-card .row {
+  margin-top: 6px;
+}
+
+/* ===== 모달 ===== */
 .modal {
   position: fixed;
   top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.5);
-  display:flex; align-items:center; justify-content:center;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
-.modal.hidden { display:none; }
+
+.modal.hidden {
+  display: none;
+}
+
 .modal-body {
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  max-width:500px;
-  width:100%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.qword {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.choice {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: #f0f0f0;
+}
+
+.choice.correct {
+  background: #c8f7c5;
+  border-color: #2ecc71;
+}
+
+.choice.wrong {
+  background: #f7c5c5;
+  border-color: #e74c3c;
+}
+
+.choice.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ===== 통계 ===== */
+#weakList, #recentList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#weakList li, #recentList li {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+  background: #fafafa;
 }
