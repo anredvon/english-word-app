@@ -1,4 +1,5 @@
 import os
+import random
 import pymysql
 from flask import Flask, request, jsonify, render_template, send_from_directory
 
@@ -10,7 +11,7 @@ app = Flask(__name__)
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", ""),   # Web 탭 → Environment variables 에 DB_PASS 등록 권장
+    "password": os.environ.get("DB_PASS", ""),
     "database": "anredvon$default",
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
@@ -19,7 +20,7 @@ def get_conn():
     return pymysql.connect(**DB)
 
 # =======================
-# 라우팅 (UI/정적)
+# 라우팅
 # =======================
 @app.route("/")
 def home():
@@ -34,10 +35,8 @@ def healthz():
     return "ok", 200
 
 # =======================
-# API: 단어 등록/조회/퀴즈/정오답/통계
+# API
 # =======================
-
-# 1) 단어 등록
 @app.post("/api/words")
 def api_create_word():
     try:
@@ -57,10 +56,7 @@ def api_create_word():
 
         with get_conn() as conn, conn.cursor() as cur:
             cur.execute(
-                """
-                INSERT INTO words (word, meaning, example, level, registered_on)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
+                "INSERT INTO words (word, meaning, example, level, registered_on) VALUES (%s, %s, %s, %s, %s)",
                 (word, meaning, example, level, reg),
             )
             conn.commit()
@@ -70,7 +66,6 @@ def api_create_word():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-# 2) 대량 등록
 @app.post("/api/words/bulk")
 def api_create_words_bulk():
     try:
@@ -106,7 +101,6 @@ def api_create_words_bulk():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-# 3) 단어 목록 (검색/일자 필터) ← 여기 DATE() 적용
 @app.get("/api/words")
 def api_list_words():
     q_date = request.args.get("date")
@@ -115,7 +109,7 @@ def api_list_words():
     sql = "SELECT * FROM words"
     conds, params = [], []
     if q_date:
-        conds.append("DATE(registered_on) = %s")   # ✅ 수정
+        conds.append("DATE(registered_on) = %s")
         params.append(q_date)
     if q:
         conds.append("(word LIKE %s OR meaning LIKE %s)")
@@ -129,7 +123,6 @@ def api_list_words():
         rows = cur.fetchall()
     return jsonify(rows)
 
-# 4) 퀴즈 풀 ← 여기 DATE() 적용
 @app.get("/api/quiz")
 def api_quiz_pool():
     q_date = request.args.get("date")
@@ -141,76 +134,7 @@ def api_quiz_pool():
         rows = cur.fetchall()
     return jsonify(rows)
 
-# 5) 정답/오답
-@app.post("/api/words/<int:wid>/result")
-def api_update_result(wid):
-    data = request.get_json() or {}
-    is_correct = bool(data.get("correct"))
-    with get_conn() as conn, conn.cursor() as cur:
-        if is_correct:
-            cur.execute("UPDATE words SET correct = correct + 1, last_tested = NOW() WHERE id=%s", (wid,))
-        else:
-            cur.execute("UPDATE words SET wrong = wrong + 1, last_tested = NOW() WHERE id=%s", (wid,))
-        conn.commit()
-    return jsonify({"ok": True})
-
-# 6) 일자별 통계 ← 여기 DATE() 적용
-@app.get("/api/stats/daily")
-def api_stats_daily():
-    d_from = request.args.get("from")
-    d_to = request.args.get("to")
-
-    sql = """
-      SELECT DATE(registered_on) AS day,  -- ✅ 수정
-             COUNT(*)       AS words,
-             SUM(correct)   AS correct,
-             SUM(wrong)     AS wrong
-        FROM words
-    """
-    params, conds = [], []
-    if d_from:
-        conds.append("DATE(registered_on) >= %s")
-        params.append(d_from)
-    if d_to:
-        conds.append("DATE(registered_on) <= %s")
-        params.append(d_to)
-    if conds:
-        sql += " WHERE " + " AND ".join(conds)
-    sql += " GROUP BY DATE(registered_on) ORDER BY DATE(registered_on) DESC"
-
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(sql, params)
-        rows = cur.fetchall()
-
-    for r in rows:
-        tot = (r["correct"] or 0) + (r["wrong"] or 0)
-        r["accuracy"] = round((r["correct"] or 0) * 100 / tot, 1) if tot else 0.0
-
-    return jsonify(rows)
-
-# 단어 삭제
-@app.delete("/api/words/<int:wid>")
-def api_delete_word(wid):
-    try:
-        with get_conn() as conn, conn.cursor() as cur:
-            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
-            conn.commit()
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-# =======================
-# 개발 서버 실행
-# =======================
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)
-
-
-# ===== Enhanced Quiz API (6 modes) =====
-import random
-from flask import request, jsonify
-
-@app.route("/api/quiz2")
+@app.get("/api/quiz2")
 def api_quiz2():
     mode = request.args.get("mode", "en2ko")
     d = request.args.get("date")
@@ -218,7 +142,7 @@ def api_quiz2():
     sql = "SELECT id, word, meaning, example FROM words"
     params = []
     if d:
-        sql += " WHERE registered_on=%s"
+        sql += " WHERE DATE(registered_on)=%s"
         params.append(d)
     sql += " ORDER BY RAND() LIMIT 100"
 
@@ -250,7 +174,67 @@ def api_quiz2():
             sentence = (item.get("example") or f"{item['word']} is ...").replace(item["word"], "_____")
             q = {"id": item["id"], "question": sentence, "answer": item["word"], "type": "sa"}
         else:
-            # fallback: en2ko
             q = {"id": item["id"], "question": item["word"], "answer": item["meaning"], "type": "mc"}
         out.append(q)
     return jsonify(out)
+
+@app.post("/api/words/<int:wid>/result")
+def api_update_result(wid):
+    data = request.get_json() or {}
+    is_correct = bool(data.get("correct"))
+    with get_conn() as conn, conn.cursor() as cur:
+        if is_correct:
+            cur.execute("UPDATE words SET correct = correct + 1, last_tested = NOW() WHERE id=%s", (wid,))
+        else:
+            cur.execute("UPDATE words SET wrong = wrong + 1, last_tested = NOW() WHERE id=%s", (wid,))
+        conn.commit()
+    return jsonify({"ok": True})
+
+@app.get("/api/stats/daily")
+def api_stats_daily():
+    d_from = request.args.get("from")
+    d_to = request.args.get("to")
+
+    sql = '''
+      SELECT DATE(registered_on) AS day,
+             COUNT(*)       AS words,
+             SUM(correct)   AS correct,
+             SUM(wrong)     AS wrong
+        FROM words
+    '''
+    params, conds = [], []
+    if d_from:
+        conds.append("DATE(registered_on) >= %s")
+        params.append(d_from)
+    if d_to:
+        conds.append("DATE(registered_on) <= %s")
+        params.append(d_to)
+    if conds:
+        sql += " WHERE " + " AND ".join(conds)
+    sql += " GROUP BY DATE(registered_on) ORDER BY DATE(registered_on) DESC"
+
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+
+    for r in rows:
+        tot = (r["correct"] or 0) + (r["wrong"] or 0)
+        r["accuracy"] = round((r["correct"] or 0) * 100 / tot, 1) if tot else 0.0
+
+    return jsonify(rows)
+
+@app.delete("/api/words/<int:wid>")
+def api_delete_word(wid):
+    try:
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM words WHERE id=%s", (wid,))
+            conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# =======================
+# 개발 서버 실행
+# =======================
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3000, debug=True)
