@@ -172,3 +172,22 @@ body.modal-open{ overflow:hidden; }
 .modal-body{ overscroll-behavior: contain; }
 .modal-head button#statsClose,
 .modal-head button#quizClose{ padding:10px 14px; margin:-4px -6px -4px auto; }
+
+
+.word-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* 줄 간격 */
+  margin-bottom: 12px;
+}
+.word-form .row {
+  display: flex;
+  gap: 6px;
+}
+.word-form input {
+  flex: 1;
+  padding: 6px;
+}
+.word-form button {
+  padding: 6px 12px;
+}
