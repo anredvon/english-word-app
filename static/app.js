@@ -7,24 +7,38 @@ async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(aw
 async function jpost(url, body){ const r=await fetch(url,{method:"POST",headers:{ "Content-Type":"application/json" }, body:JSON.stringify(body)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
 
 /* ====== 엘리먼트 ====== */
+const form = $("wordForm");
+const wordEl = $("word");
+const meaningEl = $("meaning");
+const exampleEl = $("example");
+const regDateEl = $("regDate");
+
+const bulkSection = $("bulkSection");
+const toggleBulk = $("toggleBulk");
+const bulkInput = $("bulkInput");
+const bulkDateEl = $("bulkDate");
+const bulkParseBtn = $("bulkParse");
+const bulkApplyBtn = $("bulkApply");
+const bulkPreview = $("bulkPreview");
+const bulkStatus = $("bulkStatus");
+const bulkSpinner = $("bulkSpinner");
+
 const filterDateEl = $("filterDate");
 const loadByDateBtn = $("loadByDate");
+const listEl = $("wordList");
 const searchEl = $("search");
 const btnSearch = $("btnSearch");
 const sortEl = $("sort");
-const listEl = $("wordList");
-const voiceSel = $("voiceSelect");   // ⭐ 음성 선택 콤보박스
+const voiceSel = $("voiceSelect");   // 발음 선택
 
 /* ====== 상태 ====== */
-let words=[];
+let words=[];                 
 let currentFilterDate = filterDateEl?.value || today();
 let currentQuery="";
-let voices = [];
+let voices=[];
 
 /* ====== 보이스 로드 ====== */
-function loadVoices(){
-  voices = speechSynthesis.getVoices();
-}
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
@@ -53,10 +67,18 @@ function render(){
       <p><strong>뜻</strong> ${esc(it.meaning)}</p>
       ${it.example?`<p><strong>예문</strong> ${esc(it.example)}</p>`:""}
       <button class="ghost sm btn-speak" data-word="${esc(it.word)}">🔊 발음</button>
+      <button class="ghost sm danger btn-del" data-id="${it.id}">삭제</button>
     `;
     listEl.appendChild(li);
+
     li.querySelector(".btn-speak")?.addEventListener("click",e=>{
       speakWord(e.currentTarget.getAttribute("data-word"));
+    });
+    li.querySelector(".btn-del")?.addEventListener("click", async (e)=>{
+      const id = e.currentTarget.getAttribute("data-id");
+      if(!confirm("정말 삭제할까요?")) return;
+      await fetch(`/api/words/${id}`, { method: "DELETE" });
+      await loadWords({date: currentFilterDate});
     });
   });
 }
@@ -79,6 +101,29 @@ function speakWord(word){
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(u);
 }
+
+/* ====== 단일 등록 ====== */
+form?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const payload = {
+    word: (wordEl.value||"").trim(),
+    meaning: (meaningEl.value||"").trim(),
+    example: (exampleEl.value||"").trim(),
+    level: 1,
+    registered_on: regDateEl?.value || today(),
+  };
+  if(!payload.word || !payload.meaning){ alert("단어와 뜻을 입력하세요."); return; }
+  await jpost("/api/words", payload);
+  form.reset();
+  if (regDateEl) regDateEl.value = today();
+  await loadWords({date: currentFilterDate});
+});
+
+/* ====== 대량등록 토글 ====== */
+toggleBulk?.addEventListener("click", ()=>{
+  const isHidden = bulkSection.classList.toggle("hidden");
+  toggleBulk.textContent = isHidden ? "열기" : "닫기";
+});
 
 /* ====== 날짜 조회 ====== */
 loadByDateBtn?.addEventListener("click", async ()=>{
@@ -104,7 +149,6 @@ btnSearch?.addEventListener("click", async ()=>{
   }
 });
 
-/* ====== 검색 input 감시 ====== */
 searchEl?.addEventListener("input", ()=>{
   currentQuery = searchEl.value;
   if(currentQuery.trim()===""){
