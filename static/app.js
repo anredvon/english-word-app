@@ -147,11 +147,12 @@ form?.addEventListener("submit", async (e)=>{
 
 /* ====== 날짜 조회/검색/정렬 ====== */
 loadByDateBtn?.addEventListener("click", async ()=>{
-  currentFilterDate = filterDateEl?.value || "";
+  let d = filterDateEl?.value || "";
+  if (d && d.includes("T")) d = d.split("T")[0]; // YYYY-MM-DD만 추출
+  currentFilterDate = d;
+  console.log("조회 날짜:", currentFilterDate);
   await loadWords({date: currentFilterDate, q: currentQuery});
 });
-searchEl?.addEventListener("input", ()=> render());
-sortEl?.addEventListener("change", ()=> render());
 
 /* ====== 대량 등록: 파서/미리보기/적용 ====== */
 function parseBulkText(text){
