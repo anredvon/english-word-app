@@ -6,16 +6,17 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 app = Flask(__name__)
 
 # =======================
-# MySQL 연결 설정
+# MySQL 연결 설정 (환경변수에서 비밀번호 불러오기)
 # =======================
 DB = {
     "host": "anredvon.mysql.pythonanywhere-services.com",
     "user": "anredvon",
-    "password": os.environ.get("DB_PASS", "A601313b!"),
+    "password": os.environ.get("DB_PASS", ""),  # Web 탭 Environment Variables 사용
     "database": "anredvon$default",
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
 }
+
 def get_conn():
     return pymysql.connect(**DB)
 
