@@ -225,7 +225,7 @@ bulkApplyBtn?.addEventListener("click", async ()=>{
 /* ====== 퀴즈 ====== */
 btnQuiz?.addEventListener("click", async ()=>{
   const d = filterDateEl?.value || "";
-  const pool = await jget(`/api/quiz${d?`?date=${d}`:""}`);
+  const pool = await jget(`/api/quiz2${d?`?date=${d}`:""}`);
   if(pool.length<4){ alert("퀴즈는 단어가 최소 4개 이상 필요해요."); return; }
 
   quizState.pool = shuffle(pool).slice(0, 50);
@@ -234,6 +234,7 @@ btnQuiz?.addEventListener("click", async ()=>{
 
   qWrongOnly.disabled = true;
   quizModal.classList.remove("hidden");
+  if(qInputWrap){ qInputWrap.classList.add("hidden"); if(qInput){ qInput.value=""; qInput.disabled=false; } if(qSubmit){ qSubmit.disabled=false; } }
   nextQuestion();
 });
 qWrongOnly?.addEventListener("click", ()=>{
@@ -248,23 +249,31 @@ quizClose?.addEventListener("click", ()=> quizModal.classList.add("hidden"));
 qRestart?.addEventListener("click", ()=>{ quizState.idx=0; quizState.score=0; nextQuestion(); });
 qNext?.addEventListener("click", ()=>{ quizState.idx++; nextQuestion(); });
 
-function nextQuestion(){
-  qChoices.innerHTML=""; qNext.disabled=true;
-  const total = quizState.pool.length;
+function nextQuestion(){qChoices.innerHTML=""; qNext.disabled=true;
+const total = quizState.pool.length;
 
-  if(quizState.idx>=total){
-    qWord.textContent=`완료! 최종 점수: ${quizState.score} / ${total}`;
-    qCount.textContent=`${total}/${total}`;
-    qWrongOnly.disabled = quizState.wrongIds.length===0;
-    return;
-  }
+// 주관식 UI 초기화
+if (qInputWrap) { qInputWrap.classList.add("hidden"); }
+if (qSubmit) { qSubmit.disabled = false; }
+if (qInput) { qInput.value=""; }
 
-  const correct = quizState.pool[quizState.idx];
-  const mode = quizState.mode;
+if(quizState.idx>=total){
+  qWord.textContent=`완료! 최종 점수: ${quizState.score} / ${total}`;
+  qCount.textContent=`${total}/${total}`;
+  qWrongOnly.disabled = quizState.wrongIds.length===0;
+  return;
+}
 
-  const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
-  let options = [];
+const correct = quizState.pool[quizState.idx];
+const mode = quizState.mode;
 
+const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
+let options = [];
+
+const isSubjective = (mode === "sa_en2ko" || mode === "sa_ko2en" || mode === "sa_cloze");
+
+if (!isSubjective) {
+  // === 객관식 ===
   if(mode === "en2ko"){
     qWord.textContent = correct.word;
     options = shuffle([correct, ...others]);
@@ -279,34 +288,91 @@ function nextQuestion(){
     options = shuffle([correct, ...others]);
     options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
   }
+} else {
+  // === 주관식 ===
+  if (mode === "sa_en2ko") {
+    qWord.textContent = correct.word;
+  } else if (mode === "sa_ko2en") {
+    qWord.textContent = correct.meaning;
+  } else {
+    const sentence = (correct.example || `${correct.word} is ...`).replace(new RegExp(correct.word, "ig"), "_____");
+    qWord.textContent = sentence;
+  }
 
-  qCount.textContent = `${quizState.idx+1}/${total}`;
-  qScore.textContent = `점수 ${quizState.score}`;
+  if (qInputWrap) qInputWrap.classList.remove("hidden");
+  if (qChoices) qChoices.innerHTML = "";
+  qNext.disabled = true;
 
-  function addChoice(label, isCorrect){
-    const div = document.createElement("div");
-    div.className="choice";
-    div.textContent = label;
-    div.addEventListener("click", async ()=>{
-      [...qChoices.children].forEach(el=>el.classList.add("disabled"));
-      if(isCorrect){
-        div.classList.add("correct");
+  if (qSubmit) {
+    const old = qSubmit._handler;
+    if (old) qSubmit.removeEventListener("click", old);
+    const handler = async () => {
+      const ua = normalizeAnswer(qInput?.value);
+      let expected = "";
+      if (mode === "sa_en2ko") expected = normalizeAnswer(correct.meaning);
+      else if (mode === "sa_ko2en") expected = normalizeAnswer(correct.word);
+      else expected = normalizeAnswer(correct.word);
+
+      const isCorrect = ua && ua == expected;
+
+      if (isCorrect) {
         quizState.score++;
-        try{ await jpost(`/api/words/${correct.id}/result`, {correct: true}); }catch(e){}
-      }else{
-        div.classList.add("wrong");
+        try { await jpost(`/api/words/${correct.id}/result`, {correct: true}); } catch(e){}
+      } else {
         quizState.wrongIds.push(correct.id);
-        const correctText = (mode==="en2ko") ? correct.meaning : correct.word;
-        const c = [...qChoices.children].find(el=>el.textContent===correctText);
-        c && c.classList.add("correct");
-        try{ await jpost(`/api/words/${correct.id}/result`, {correct: false}); }catch(e){}
+        try { await jpost(`/api/words/${correct.id}/result`, {correct: false}); } catch(e){}
       }
-      qScore.textContent = `점수 ${quizState.score}`;
-      qNext.disabled=false;
-    });
-    qChoices.appendChild(div);
+      qNext.disabled = false;
+      if (qInput) qInput.disabled = true;
+      qSubmit.disabled = true;
+      if (qInput) {
+        qInput.style.borderColor = isCorrect ? "#16a34a" : "#ef4444";
+        qInput.style.background = isCorrect ? "#ecfdf5" : "#fef2f2";
+      }
+    };
+    qSubmit.addEventListener("click", handler);
+    qSubmit._handler = handler;
+
+    if (qInput) {
+      const oldKey = qInput._keyHandler;
+      if (oldKey) qInput.removeEventListener("keydown", oldKey);
+      const keyHandler = (ev)=>{ if (ev.key === "Enter") { ev.preventDefault(); qSubmit.click(); } };
+      qInput.addEventListener("keydown", keyHandler);
+      qInput._keyHandler = keyHandler;
+      qInput.disabled = false;
+      qInput.focus();
+      qInput.style.borderColor = "";
+      qInput.style.background = "";
+    }
   }
 }
+
+qCount.textContent = `${quizState.idx+1}/${total}`;
+qScore.textContent = `점수 ${quizState.score}`;
+
+function addChoice(label, isCorrect){
+  const div = document.createElement("div");
+  div.className="choice";
+  div.textContent = label;
+  div.addEventListener("click", async ()=>{
+    [...qChoices.children].forEach(el=>el.classList.add("disabled"));
+    if(isCorrect){
+      div.classList.add("correct");
+      quizState.score++;
+      try{ await jpost(`/api/words/${correct.id}/result`, {correct: true}); }catch(e){}
+    }else{
+      div.classList.add("wrong");
+      quizState.wrongIds.push(correct.id);
+      const correctText = (mode==="en2ko") ? correct.meaning : correct.word;
+      const c = [...qChoices.children].find(el=>el.textContent===correctText);
+      c && c.classList.add("correct");
+      try{ await jpost(`/api/words/${correct.id}/result`, {correct: false}); }catch(e){}
+    }
+    qScore.textContent = `점수 ${quizState.score}`;
+    qNext.disabled=false;
+  });
+  qChoices.appendChild(div);
+}}
 
 /* ====== 통계 ====== */
 btnStats?.addEventListener("click", async ()=>{
@@ -363,3 +429,6 @@ loadWords({date: currentFilterDate}).catch(err=>{
   console.error(err);
   alert("목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
 });
+
+
+function normalizeAnswer(s){ return String(s||'').trim().toLowerCase(); }
