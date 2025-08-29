@@ -46,6 +46,7 @@ footer {
 /* ===== 폼 & 입력 ===== */
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 8px;
 }
@@ -165,6 +166,7 @@ button.sm {
   font-size: 20px;
   font-weight: bold;
   margin: 12px 0;
+  text-align: center;
 }
 
 .choices {
