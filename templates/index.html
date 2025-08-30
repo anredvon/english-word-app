@@ -30,21 +30,22 @@
     </section>
 
     <!-- 대량 등록 -->
-    <section class="card">
-      <h2>대량 등록</h2>
-      <button id="toggleBulk" class="ghost">열기</button>
-      <div id="bulkSection" class="hidden">
-        <textarea id="bulkInput" placeholder="apple - 사과 | I like an apple."></textarea>
-        <div class="row">
-          <input id="bulkDate" type="date">
-          <button id="bulkParse" class="ghost">미리보기</button>
-          <button id="bulkApply" class="accent" disabled>등록</button>
-          <span id="bulkSpinner" class="hidden">⏳</span>
-        </div>
-        <p id="bulkStatus"></p>
-        <ul id="bulkPreview"></ul>
-      </div>
-    </section>
+      <section class="card">
+          <h3>대량 등록</h3>
+          <!-- 열기 버튼 -->
+          <button id="toggleBulk" class="accent">열기</button>
+
+          <!-- 숨겨진 입력창 -->
+          <div id="bulkSection" class="hidden">
+              <textarea id="bulkInput" placeholder="apple - 사과 | I like an apple."></textarea>
+              <input type="date" id="bulkDate">
+              <button id="bulkParse" class="ghost">미리보기</button>
+              <button id="bulkApply" class="accent">등록</button>
+              <span id="bulkSpinner" class="hidden">⏳</span>
+              <div id="bulkStatus"></div>
+              <ul id="bulkPreview"></ul>
+          </div>
+      </section>
 
     <!-- 단어 카드 -->
     <section class="card">
