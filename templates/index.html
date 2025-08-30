@@ -19,13 +19,13 @@
       <h2>단일 단어 등록</h2>
       <form id="wordForm">
         <div class="row">
-          <input id="word" placeholder="단어" required>
-          <input id="meaning" placeholder="뜻" required>
+          <input id="word" type="text"placeholder="단어" required>
+          <input id="meaning" type="text"placeholder="뜻" required>
           <input id="regDate" type="date">
           <button type="submit" class="accent">추가</button>
         </div>
         <div class="row">
-          <input id="example" placeholder="예문 (선택)">
+          <input id="example" type="text" placeholder="예문 (선택)">
         </div>
       </form>
     </section>
@@ -54,7 +54,7 @@
       <div class="row wrap gap">
         <input id="filterDate" type="date">
         <button id="loadByDate" class="accent">날짜 조회</button>
-        <input id="search" placeholder="검색(단어/뜻)">
+        <input id="search" type="text" placeholder="검색(단어/뜻)">
         <button id="btnSearch" class="accent">검색</button>
         <select id="sort">
           <option value="created_desc">최신 등록순</option>
