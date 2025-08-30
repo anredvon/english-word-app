@@ -306,7 +306,7 @@ function nextQuestion(){
     $("qInputWrap").classList.remove("hidden");
     qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
-  else if(mode === "cloze_input"){   // ✅ 빈칸 채우기 주관식
+  else if(mode === "cloze_input"){   // ✅ 빈칸 채우기 주관식1
     const sentence = (correct.example || `${correct.word} is ...`)
       .replace(new RegExp(correct.word, "ig"), "_____");
     qWord.textContent = sentence;
