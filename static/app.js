@@ -296,6 +296,8 @@ else if(quizState.mode === "cloze_input"){
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
 }
+
+
 function addChoice(label, isCorrect){
   const div=document.createElement("div");
   div.className="choice"; div.textContent=label;
