@@ -257,34 +257,34 @@ function nextQuestion(){
 // 기본은 항상 숨김
 qInputWrap.classList.add("hidden");
 
-if(mode === "en2ko"){
+if(quizState.mode === "en2ko"){
    qWord.textContent = correct.word;
    options = shuffle([correct, ...others]);
    options.forEach(opt => addChoice(opt.meaning, opt.id === correct.id));
 }
-else if(mode === "ko2en"){
+else if(quizState.mode === "ko2en"){
    qWord.textContent = correct.meaning;
    options = shuffle([correct, ...others]);
    options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
 }
-else if(mode === "cloze"){
+else if(quizState.mode === "cloze"){
    const sentence = (correct.example || `${correct.word} is ...`)
      .replace(new RegExp(correct.word, "ig"), "_____");
    qWord.textContent = sentence;
    options = shuffle([correct, ...others]);
    options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
 }
-else if(mode === "en2ko_input"){
+else if(quizState.mode === "en2ko_input"){
    qWord.textContent = correct.word;
    qInputWrap.classList.remove("hidden");
    qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
 }
-else if(mode === "ko2en_input"){
+else if(quizState.mode === "ko2en_input"){
    qWord.textContent = correct.meaning;
    qInputWrap.classList.remove("hidden");
    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
 }
-else if(mode === "cloze_input"){
+else if(quizState.mode === "cloze_input"){
    const sentence = (correct.example || `${correct.word} is ...`)
      .replace(new RegExp(correct.word, "ig"), "_____");
    qWord.textContent = sentence;
