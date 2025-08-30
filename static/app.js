@@ -314,6 +314,7 @@ function nextQuestion(){
       .replace(new RegExp(correct.word, "ig"), "_____");
     qWord.textContent = sentence;
     qInputWrap.classList.remove("hidden");
+    qInput.placeholder = "정답 단어(영어) 입력";
     qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
 

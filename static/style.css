@@ -42,21 +42,6 @@ input[type="text"], input[type="date"], select, button {
 
 #text1{
     width: 90%;
-    height: 44px;          /* 손가락 터치 최소 권장 높이 */
-      font-size: 16px;
-      padding: 0 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-}
-
-#text2{
-     height: 44px;          /* 손가락 터치 최소 권장 높이 */
-      font-size: 16px;
-      padding: 0 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
 }
 
 button {
