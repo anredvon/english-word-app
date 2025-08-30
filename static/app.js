@@ -309,14 +309,22 @@ function nextQuestion(){
     qInputWrap.classList.remove("hidden");
     qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
-  else if(mode === "cloze_input"){   // 빈칸 채우기 (주관식)
-    const sentence = (correct.example || `${correct.word} is ...`)
-      .replace(new RegExp(correct.word, "ig"), "_____");
-    qWord.textContent = sentence;
-    qInputWrap.classList.remove("hidden");
-    qInput.placeholder = "정답 단어(영어) 입력";
-    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
-  }
+  else if(mode === "cloze_input"){   // ✅ 빈칸 채우기 (주관식)
+  let sentence = correct.example || `${correct.word} is ...`;
+
+  // 정답 단어를 빈칸으로 치환
+  sentence = sentence.replace(new RegExp(correct.word, "ig"), "_____");
+
+  // 예문 + 한글 뜻 같이 보여주기
+  qWord.innerHTML = `
+    <div style="margin-bottom:8px;">${sentence}</div>
+    <div style="color:#666; font-size:14px;">(${esc(correct.meaning)})</div>
+  `;
+
+  qInputWrap.classList.remove("hidden");
+  qInput.placeholder = "정답 단어(영어) 입력";
+  qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+}
 
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
