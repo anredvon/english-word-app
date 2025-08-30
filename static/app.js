@@ -236,6 +236,7 @@ function nextQuestion(){
   const correct = quizState.pool[quizState.idx];
   const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
 
+/*
   if(quizState.mode==="en2ko"){
     qWord.textContent = correct.word;
     shuffle([correct,...others]).forEach(opt=> addChoice(opt.meaning, opt.id===correct.id));
@@ -249,6 +250,45 @@ function nextQuestion(){
     qWord.textContent = quizState.mode==="essay_en2ko" ? correct.word : correct.meaning;
     qInputWrap.classList.remove("hidden");
   }
+  */
+// 기본은 항상 숨김
+$("qInputWrap").classList.add("hidden");
+
+if(mode === "en2ko"){
+   qWord.textContent = correct.word;
+   options = shuffle([correct, ...others]);
+   options.forEach(opt => addChoice(opt.meaning, opt.id === correct.id));
+}
+else if(mode === "ko2en"){
+   qWord.textContent = correct.meaning;
+   options = shuffle([correct, ...others]);
+   options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
+}
+else if(mode === "cloze"){
+   const sentence = (correct.example || `${correct.word} is ...`)
+     .replace(new RegExp(correct.word, "ig"), "_____");
+   qWord.textContent = sentence;
+   options = shuffle([correct, ...others]);
+   options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
+}
+else if(mode === "en2ko_input"){
+   qWord.textContent = correct.word;
+   $("qInputWrap").classList.remove("hidden");  // ✅ 주관식만 input 표시
+   qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
+}
+else if(mode === "ko2en_input"){
+   qWord.textContent = correct.meaning;
+   $("qInputWrap").classList.remove("hidden");
+   qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+}
+else if(mode === "cloze_input"){
+   const sentence = (correct.example || `${correct.word} is ...`)
+     .replace(new RegExp(correct.word, "ig"), "_____");
+   qWord.textContent = sentence;
+   $("qInputWrap").classList.remove("hidden");
+   qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+}
+
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
 }
