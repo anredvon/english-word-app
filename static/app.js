@@ -55,8 +55,9 @@ if (bulkDateEl) bulkDateEl.value = today();
 if (filterDateEl) filterDateEl.value = today();
 
 /* ====== 토글: 대량 등록 열기/닫기 ====== */
-toggleBulk?.addEventListener("click", ()=>{
+toggleBulk?.addEventListener("click", () => {
   bulkSection.classList.toggle("hidden");
+  toggleBulk.textContent = bulkSection.classList.contains("hidden") ? "열기" : "닫기";
 });
 
 /* ====== 서버에서 목록 로드 ====== */
