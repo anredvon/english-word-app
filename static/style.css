@@ -188,3 +188,20 @@ select:disabled {
   .qword { font-size: 18px; }
 }
 
+
+.panel {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.panel h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 4px;
+  color: #007bff;
+}
