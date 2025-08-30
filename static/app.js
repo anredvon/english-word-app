@@ -336,6 +336,11 @@ function checkInputAnswer(answer, id){
     jpost(`/api/words/${id}/result`, {correct: false});
   }
 
+  qScore.textContent = `점수 ${quizState.score}`;
+  qNext.disabled = false;
+}
+
+
 
 function addChoice(label, isCorrect){
   const div=document.createElement("div");
