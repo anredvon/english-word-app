@@ -231,6 +231,8 @@ qSubmit?.addEventListener("click", ()=>{
   qNext.disabled=false;
 });
 
+
+/* 퀴즈모드 관련 내용 일단 주석처리.
 function nextQuestion(){
   qChoices.innerHTML=""; qNext.disabled=true; qInputWrap.classList.add("hidden");
   const total = quizState.pool.length;
@@ -238,7 +240,7 @@ function nextQuestion(){
   const correct = quizState.pool[quizState.idx];
   const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
 
-/* 퀴즈모드 관련 내용 일단 주석처리.
+
   if(quizState.mode==="en2ko"){
     qWord.textContent = correct.word;
     shuffle([correct,...others]).forEach(opt=> addChoice(opt.meaning, opt.id===correct.id));
@@ -252,51 +254,63 @@ function nextQuestion(){
     qWord.textContent = quizState.mode==="essay_en2ko" ? correct.word : correct.meaning;
     qInputWrap.classList.remove("hidden");
   }
-  */
+  qCount.textContent = `${quizState.idx+1}/${total}`;
+  qScore.textContent = `점수 ${quizState.score}`;
+}
+ */
 
-// 기본은 항상 숨김
-qInputWrap.classList.add("hidden");
+function nextQuestion(){
+  qChoices.innerHTML = "";
+  qNext.disabled = true;
+  qInputWrap.classList.add("hidden");
 
-if(quizState.mode === "en2ko"){
-   qWord.textContent = correct.word;
-   options = shuffle([correct, ...others]);
-   options.forEach(opt => addChoice(opt.meaning, opt.id === correct.id));
-}
-else if(quizState.mode === "ko2en"){
-   qWord.textContent = correct.meaning;
-   options = shuffle([correct, ...others]);
-   options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
-}
-else if(quizState.mode === "cloze"){
-   const sentence = (correct.example || `${correct.word} is ...`)
-     .replace(new RegExp(correct.word, "ig"), "_____");
-   qWord.textContent = sentence;
-   options = shuffle([correct, ...others]);
-   options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
-}
-else if(quizState.mode === "en2ko_input"){
-   qWord.textContent = correct.word;
-   qInputWrap.classList.remove("hidden");
-   qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
-}
-else if(quizState.mode === "ko2en_input"){
-   qWord.textContent = correct.meaning;
-   qInputWrap.classList.remove("hidden");
-   qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
-}
-else if(quizState.mode === "cloze_input"){
-   const sentence = (correct.example || `${correct.word} is ...`)
-     .replace(new RegExp(correct.word, "ig"), "_____");
-   qWord.textContent = sentence;
-   qInputWrap.classList.remove("hidden");
-   qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
-}
+  const total = quizState.pool.length;
+  if(quizState.idx >= total){
+    qWord.textContent = `완료! 점수 ${quizState.score}/${total}`;
+    qCount.textContent = `${total}/${total}`;
+    return;
+  }
 
+  const correct = quizState.pool[quizState.idx];
+  const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
+
+  // 기본은 객관식 모드
+  if(quizState.mode === "en2ko"){
+    qWord.textContent = correct.word;
+    shuffle([correct,...others]).forEach(opt => addChoice(opt.meaning, opt.id===correct.id));
+  }
+  else if(quizState.mode === "ko2en"){
+    qWord.textContent = correct.meaning;
+    shuffle([correct,...others]).forEach(opt => addChoice(opt.word, opt.id===correct.id));
+  }
+  else if(quizState.mode === "cloze"){
+    const sentence = (correct.example || `${correct.word} is ...`)
+      .replace(new RegExp(correct.word,"ig"),"_____");
+    qWord.textContent = sentence;
+    shuffle([correct,...others]).forEach(opt => addChoice(opt.word, opt.id===correct.id));
+  }
+  // 주관식 모드
+  else if(quizState.mode === "en2ko_input"){
+    qWord.textContent = correct.word;
+    qInputWrap.classList.remove("hidden");
+    qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
+  }
+  else if(quizState.mode === "ko2en_input"){
+    qWord.textContent = correct.meaning;
+    qInputWrap.classList.remove("hidden");
+    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+  }
+  else if(quizState.mode === "cloze_input"){
+    const sentence = (correct.example || `${correct.word} is ...`)
+      .replace(new RegExp(correct.word,"ig"),"_____");
+    qWord.textContent = sentence;
+    qInputWrap.classList.remove("hidden");
+    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+  }
 
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
 }
-
 
 function addChoice(label, isCorrect){
   const div=document.createElement("div");
