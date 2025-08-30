@@ -262,55 +262,80 @@ function nextQuestion(){
 function nextQuestion(){
   qChoices.innerHTML = "";
   qNext.disabled = true;
-  qInputWrap.classList.add("hidden");
+  $("qInputWrap").classList.add("hidden");   // 기본은 숨김
+  qInput.value = "";                         // 입력 초기화
 
   const total = quizState.pool.length;
   if(quizState.idx >= total){
-    qWord.textContent = `완료! 점수 ${quizState.score}/${total}`;
-    qCount.textContent = `${total}/${total}`;
+    qWord.textContent=`완료! 최종 점수: ${quizState.score} / ${total}`;
+    qCount.textContent=`${total}/${total}`;
+    qWrongOnly.disabled = quizState.wrongIds.length===0;
     return;
   }
 
   const correct = quizState.pool[quizState.idx];
   const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
+  const mode = quizState.mode;
 
-  // 기본은 객관식 모드
-  if(quizState.mode === "en2ko"){
+  let options=[];
+
+  if(mode === "en2ko"){  // 영어→한국어 (객관식)
     qWord.textContent = correct.word;
-    shuffle([correct,...others]).forEach(opt => addChoice(opt.meaning, opt.id===correct.id));
+    options = shuffle([correct, ...others]);
+    options.forEach(opt => addChoice(opt.meaning, opt.id === correct.id));
   }
-  else if(quizState.mode === "ko2en"){
+  else if(mode === "ko2en"){ // 한국어→영어 (객관식)
     qWord.textContent = correct.meaning;
-    shuffle([correct,...others]).forEach(opt => addChoice(opt.word, opt.id===correct.id));
+    options = shuffle([correct, ...others]);
+    options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
   }
-  else if(quizState.mode === "cloze"){
-    const sentence = (correct.example || `${correct.word} is ...`)
-      .replace(new RegExp(correct.word,"ig"),"_____");
+  else if(mode === "cloze"){ // 빈칸 채우기 (객관식)
+    const sentence = (correct.example || `${correct.word} is ...`).replace(new RegExp(correct.word,"ig"), "_____");
     qWord.textContent = sentence;
-    shuffle([correct,...others]).forEach(opt => addChoice(opt.word, opt.id===correct.id));
+    options = shuffle([correct, ...others]);
+    options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
   }
-  // 주관식 모드
-  else if(quizState.mode === "en2ko_input"){
+  else if(mode === "en2ko_input"){ // 영어→한국어 (주관식)
     qWord.textContent = correct.word;
-    qInputWrap.classList.remove("hidden");
-    qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
+    $("qInputWrap").classList.remove("hidden");
+    qSubmit.onclick = ()=>{
+      checkInputAnswer(correct.meaning, correct.id);
+    };
   }
-  else if(quizState.mode === "ko2en_input"){
+  else if(mode === "ko2en_input"){ // 한국어→영어 (주관식)
     qWord.textContent = correct.meaning;
-    qInputWrap.classList.remove("hidden");
-    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+    $("qInputWrap").classList.remove("hidden");
+    qSubmit.onclick = ()=>{
+      checkInputAnswer(correct.word, correct.id);
+    };
   }
-  else if(quizState.mode === "cloze_input"){
-    const sentence = (correct.example || `${correct.word} is ...`)
-      .replace(new RegExp(correct.word,"ig"),"_____");
+  else if(mode === "cloze_input"){ // 빈칸 채우기 (주관식)
+    const sentence = (correct.example || `${correct.word} is ...`).replace(new RegExp(correct.word,"ig"), "_____");
     qWord.textContent = sentence;
-    qInputWrap.classList.remove("hidden");
-    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
+    $("qInputWrap").classList.remove("hidden");
+    qSubmit.onclick = ()=>{
+      checkInputAnswer(correct.word, correct.id);
+    };
   }
 
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
 }
+
+function checkInputAnswer(answer, id){
+  const userAns = qInput.value.trim();
+  if(!userAns) return;
+
+  if(userAns.toLowerCase() === answer.toLowerCase()){
+    alert("정답입니다!");
+    quizState.score++;
+    jpost(`/api/words/${id}/result`, {correct: true});
+  } else {
+    alert(`오답! 정답은: ${answer}`);
+    quizState.wrongIds.push(id);
+    jpost(`/api/words/${id}/result`, {correct: false});
+  }
+
 
 function addChoice(label, isCorrect){
   const div=document.createElement("div");
