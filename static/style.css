@@ -50,35 +50,28 @@ form input:focus, form textarea:focus, form select:focus {
 
 /* 버튼 스타일 */
 button {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+  border-radius: 6px;
   cursor: pointer;
   border: none;
-  background: #ff6600;
-  color: #fff;
-  border-radius: 6px;
-  padding: 0.45rem 0.9rem;
-  transition: background 0.2s;
 }
 
-button:hover {
-  background: #e65c00;
+button.accent {
+  background: #ff6600;
+  color: #fff;
+}
+button.accent:hover {
+  background: #e65500;
 }
 
 button.ghost {
   background: #f2f2f2;
   color: #333;
 }
-
 button.ghost:hover {
-  background: #ddd;
-}
-
-button.danger {
-  background: #ff3b30;
-  color: #fff;
-}
-
-button.danger:hover {
-  background: #e62e23;
+  background: #e5e5e5;
 }
 
 /* =====================
@@ -94,6 +87,7 @@ button.danger:hover {
   border-radius: 6px;
   font-size: 14px;
   box-sizing: border-box;
+  resize: vertical;     /* 사용자가 크기 조절 가능 */
 }
 
 /* 열기 버튼 (등록과 같은 오렌지색) */
