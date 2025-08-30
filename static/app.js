@@ -54,6 +54,10 @@ if (regDateEl) regDateEl.value = today();
 if (bulkDateEl) bulkDateEl.value = today();
 if (filterDateEl) filterDateEl.value = today();
 
+if(bulkSection){
+    bulkSection.classList.add("hidden");
+}
+
 /* ====== 토글: 대량 등록 열기/닫기 ====== */
 toggleBulk?.addEventListener("click", () => {
   //bulkSection.classList.toggle("hidden");
