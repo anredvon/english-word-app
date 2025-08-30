@@ -260,10 +260,9 @@ function nextQuestion(){
  */
 
 function nextQuestion(){
-  qChoices.innerHTML = "";
-  qNext.disabled = true;
-  $("qInputWrap").classList.add("hidden");   // 기본은 숨김
-  qInput.value = "";                         // 입력 초기화
+  qChoices.innerHTML="";
+  qNext.disabled=true;
+  $("qInputWrap").classList.add("hidden");   // ✅ 기본은 숨김
 
   const total = quizState.pool.length;
   if(quizState.idx >= total){
@@ -274,70 +273,58 @@ function nextQuestion(){
   }
 
   const correct = quizState.pool[quizState.idx];
-  const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
   const mode = quizState.mode;
+  const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
 
-  let options=[];
-
-  if(mode === "en2ko"){  // 영어→한국어 (객관식)
+  if(quizState.mode === "en2ko"){  // 객관식
     qWord.textContent = correct.word;
-    options = shuffle([correct, ...others]);
-    options.forEach(opt => addChoice(opt.meaning, opt.id === correct.id));
+    shuffle([correct,...others]).forEach(opt => addChoice(opt.meaning, opt.id===correct.id));
   }
-  else if(mode === "ko2en"){ // 한국어→영어 (객관식)
+  else if(quizState.mode === "ko2en"){  // 객관식
     qWord.textContent = correct.meaning;
-    options = shuffle([correct, ...others]);
-    options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
+    shuffle([correct,...others]).forEach(opt => addChoice(opt.word, opt.id===correct.id));
   }
-  else if(mode === "cloze"){ // 빈칸 채우기 (객관식)
-    const sentence = (correct.example || `${correct.word} is ...`).replace(new RegExp(correct.word,"ig"), "_____");
-    qWord.textContent = sentence;
-    options = shuffle([correct, ...others]);
-    options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
+  else if(quizState.mode === "cloze"){  // 객관식
+    qWord.textContent = (correct.example||`${correct.word} is ...`).replace(new RegExp(correct.word,"ig"),"_____");
+    shuffle([correct,...others]).forEach(opt => addChoice(opt.word, opt.id===correct.id));
   }
-  else if(mode === "en2ko_input"){ // 영어→한국어 (주관식)
+  else if(quizState.mode === "en2ko_input"){  // 주관식
     qWord.textContent = correct.word;
     $("qInputWrap").classList.remove("hidden");
-    qSubmit.onclick = ()=>{
-      checkInputAnswer(correct.meaning, correct.id);
-    };
+    qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
   }
-  else if(mode === "ko2en_input"){ // 한국어→영어 (주관식)
+  else if(quizState.mode === "ko2en_input"){  // 주관식
     qWord.textContent = correct.meaning;
     $("qInputWrap").classList.remove("hidden");
-    qSubmit.onclick = ()=>{
-      checkInputAnswer(correct.word, correct.id);
-    };
+    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
-  else if(mode === "cloze_input"){ // 빈칸 채우기 (주관식)
-    const sentence = (correct.example || `${correct.word} is ...`).replace(new RegExp(correct.word,"ig"), "_____");
-    qWord.textContent = sentence;
+  else if(quizState.mode === "cloze_input"){  // 주관식
+    qWord.textContent = (correct.example||`${correct.word} is ...`).replace(new RegExp(correct.word,"ig"),"_____");
     $("qInputWrap").classList.remove("hidden");
-    qSubmit.onclick = ()=>{
-      checkInputAnswer(correct.word, correct.id);
-    };
+    qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
 
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
 }
 
-function checkInputAnswer(answer, id){
-  const userAns = qInput.value.trim();
-  if(!userAns) return;
 
-  if(userAns.toLowerCase() === answer.toLowerCase()){
-    alert("정답입니다!");
+function checkInputAnswer(answer, wid){
+  const user = ($("qInput").value || "").trim().toLowerCase();
+  const target = (answer||"").trim().toLowerCase();
+  $("qInput").value="";
+
+  if(user === target){
+    alert("정답!");
     quizState.score++;
-    jpost(`/api/words/${id}/result`, {correct: true});
+    jpost(`/api/words/${wid}/result`, {correct: true});
   } else {
-    alert(`오답! 정답은: ${answer}`);
-    quizState.wrongIds.push(id);
-    jpost(`/api/words/${id}/result`, {correct: false});
+    alert(`오답! 정답: ${answer}`);
+    quizState.wrongIds.push(wid);
+    jpost(`/api/words/${wid}/result`, {correct: false});
   }
-
   qScore.textContent = `점수 ${quizState.score}`;
-  qNext.disabled = false;
+  qNext.disabled=false;
 }
 
 
