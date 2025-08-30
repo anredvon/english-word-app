@@ -32,6 +32,11 @@ section {
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
+
+.hidden {
+  display: none !important;
+}
+
 /* =====================
    입력 폼 스타일
 ===================== */
@@ -241,7 +246,7 @@ width: 150px;    /* 날짜 inputbox 가로길이 */
 
 
 #example{
-  width: 100%;
+  width: 50%;
 }
 
 

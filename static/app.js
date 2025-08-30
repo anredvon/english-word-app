@@ -56,8 +56,10 @@ if (filterDateEl) filterDateEl.value = today();
 
 /* ====== 토글: 대량 등록 열기/닫기 ====== */
 toggleBulk?.addEventListener("click", () => {
-  bulkSection.classList.toggle("hidden");
-  toggleBulk.textContent = bulkSection.classList.contains("hidden") ? "열기" : "닫기";
+  //bulkSection.classList.toggle("hidden");
+  //toggleBulk.textContent = bulkSection.classList.contains("hidden") ? "열기" : "닫기";
+   const isHidden = bulkSection.classList.toggle("hidden");
+    toggleBulk.textContent = isHidden ? "열기" : "닫기";
 });
 
 /* ====== 서버에서 목록 로드 ====== */
@@ -236,7 +238,7 @@ function nextQuestion(){
   const correct = quizState.pool[quizState.idx];
   const others = shuffle(quizState.pool.filter(w=>w.id!==correct.id)).slice(0,3);
 
-/*
+/* 일단 주석처리.
   if(quizState.mode==="en2ko"){
     qWord.textContent = correct.word;
     shuffle([correct,...others]).forEach(opt=> addChoice(opt.meaning, opt.id===correct.id));
@@ -251,6 +253,7 @@ function nextQuestion(){
     qInputWrap.classList.remove("hidden");
   }
   */
+
 // 기본은 항상 숨김
 $("qInputWrap").classList.add("hidden");
 
