@@ -85,10 +85,29 @@ button.danger:hover {
    대량 등록 textarea 크기
 ===================== */
 #bulkInput {
+  display: block;
   width: 100%;
-  min-height: 80px;   /* 기본 높이를 줄임 */
-  resize: vertical;   /* 사용자가 크기 조정 가능 */
-  font-family: monospace;
+  height: 80px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* 열기 버튼 (등록과 같은 오렌지색) */
+#toggleBulk {
+  background: #ff6600;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#toggleBulk:hover {
+  background: #e65500;
 }
 
 /* =====================
