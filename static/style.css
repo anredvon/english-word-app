@@ -1,277 +1,171 @@
-/* =====================
-   기본 스타일1
-===================== */
-body {
-  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+/* ========== 기본 Reset ========== */
+body, h1, h2, h3, p, ul, li, input, select, button {
   margin: 0;
   padding: 0;
-  background: #f7f7f9;
-  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
 }
 
-header {
-  background: #ff6600;
-  color: #fff;
-  padding: 1rem;
-  text-align: center;
-  font-size: 1.4rem;
-  font-weight: bold;
-}
+ul { list-style: none; }
+button { cursor: pointer; }
 
-.container {
-  max-width: 900px;
-  margin: 1.5rem auto;
-  padding: 0 1rem;
-}
-
-section {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1rem 1.2rem;
-  margin-bottom: 1.2rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-
-
-.hidden {
-  display: none !important;
-}
-
-/* =====================
-   입력 폼 스타일
-===================== */
-form input, form textarea, form select, button {
-  font-size: 1rem;
-  padding: 0.45rem 0.6rem;
+/* ========== 공통 요소 크기 통일 ========== */
+input[type="text"], input[type="date"], select, button {
+  height: 44px;          /* 손가락 터치 최소 권장 높이 */
+  font-size: 16px;
+  padding: 0 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  outline: none;
+  box-sizing: border-box;
 }
 
-form input:focus, form textarea:focus, form select:focus {
-  border-color: #ff6600;
-  box-shadow: 0 0 0 2px rgba(255,102,0,0.2);
-}
-
-/* 버튼 스타일 */
 button {
-  height: 36px;
-  padding: 0 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  cursor: pointer;
+  background: #007bff;
+  color: white;
   border: none;
+  font-weight: 500;
+  transition: background 0.2s;
 }
-
-button.accent {
-  background: #ff6600;
-  color: #fff;
-}
-button.accent:hover {
-  background: #e65500;
-}
+button:hover { background: #0056b3; }
 
 button.ghost {
-  background: #f2f2f2;
+  background: #f5f5f5;
   color: #333;
+  border: 1px solid #ccc;
 }
-button.ghost:hover {
-  background: #e5e5e5;
+button.danger {
+  background: #dc3545;
+  color: white;
 }
-
-/* =====================
-   대량 등록 textarea 크기
-===================== */
-#bulkInput {
-  display: block;
-  width: 100%;
-  height: 80px;
-  margin-top: 8px;
-  padding: 6px 8px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-  resize: vertical;     /* 사용자가 크기 조절 가능 */
+button.accent {
+  background: #28a745;
+  color: white;
 }
 
-/* 열기 버튼 (등록과 같은 오렌지색) */
-#toggleBulk {
-  background: #ff6600;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+/* 비활성화 */
+button:disabled,
+input:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-#toggleBulk:hover {
-  background: #e65500;
+/* ========== 레이아웃 ========== */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
 }
 
-/* =====================
-   단어 카드
-===================== */
-.word-card {
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 0.8rem;
-  margin-bottom: 0.8rem;
-}
-
-.word-card h3 {
-  margin: 0 0 0.3rem;
-  font-size: 1.1rem;
-}
-
-.word-card p {
-  margin: 0.2rem 0;
-  font-size: 0.95rem;
-  color: #444;
-}
-
-.word-card .meta {
-  font-size: 0.8rem;
-  color: #777;
-  margin-top: 0.4rem;
-}
-
-.word-card .row {
-  margin-top: 0.6rem;
+/* 단일 단어 등록 */
+.word-form-row {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.word-form-row > * {
+  flex: 1;
 }
 
-/* =====================
-   퀴즈 모달
-===================== */
+/* 대량 등록 */
+#bulkSection {
+  margin-top: 12px;
+}
+#bulkInput {
+  width: 100%;
+  height: 120px;
+  font-size: 14px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+}
+
+/* 단어 카드 */
+.word-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.word-card h3 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.word-card p {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.word-card .meta {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 퀴즈 모달 */
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.4);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
-
-.modal.hidden {
-  display: none;
-}
-
+.modal.hidden { display: none !important; }
 .modal-body {
   background: #fff;
-  border-radius: 10px;
-  padding: 1.2rem;
-  width: 95%;
+  padding: 20px;
+  border-radius: 12px;
   max-width: 500px;
+  width: 90%;
 }
-
-.modal-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
 .qword {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 12px 0;
 }
-
-.choices {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.choice {
-  background: #f2f2f2;
-  padding: 0.6rem;
+.choices .choice {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 6px 0;
   border-radius: 6px;
   cursor: pointer;
 }
+.choices .choice.correct { background: #28a745; color: white; }
+.choices .choice.wrong { background: #dc3545; color: white; }
+.choices .choice.disabled { opacity: 0.6; pointer-events: none; }
 
-.choice.correct {
-  background: #c6f6d5;
+/* 주관식 입력 */
+#qInputWrap {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
 }
 
-.choice.wrong {
-  background: #fed7d7;
+/* 통계 모달 */
+#statsModal .weak-item {
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+  font-size: 14px;
 }
-
-.choice.disabled {
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-/* =====================
-   통계 모달
-===================== */
 .badge {
-  display: inline-block;
   background: #eee;
   border-radius: 4px;
-  padding: 0.15rem 0.4rem;
-  font-size: 0.8rem;
-  margin-top: 0.2rem;
+  padding: 2px 6px;
+  font-size: 12px;
 }
 
-#filterDate {
-  width: 150px;    /* 날짜 inputbox 가로길이 */
-  height: 36px;    /* 버튼 높이와 동일 */
+/* ========== 반응형 ========== */
+@media (max-width: 600px) {
+  input, select, button {
+    font-size: 18px;
+    height: 48px;
+  }
+  .word-card h3 { font-size: 16px; }
+  .qword { font-size: 18px; }
 }
-
-
-#search{
-  width: 150px;    /* 날짜 inputbox 가로길이 */
-  height: 36px;    /* 버튼 높이와 동일 */
-}
-
-#date{
-       width: 150px;    /* 날짜 inputbox 가로길이 */
-       height: 36px;    /* 버튼 높이와 동일 */
-}
-
-
-#sort{
-width: 150px;    /* 날짜 inputbox 가로길이 */
-  height: 36px;    /* 버튼 높이와 동일 */
-}
-
-
-#quizMode{
-  width: 150px;    /* 퀴즈모드 inputbox 가로길이 */
-  height: 36px;    /* 버튼 높이와 동일 */
-}
-
-
-#example{
-  width: 50%;
-}
-
-
-#qInput{
-  width: 300px;    /* 퀴즈모드 inputbox 가로길이 */
-  height: 36px;    /* 버튼 높이와 동일 */
-}
-
-
-#qChoices {
-  margin-bottom: 12px;   /* 보기와 버튼 사이 간격 */
-}
-
-#qChoices .choice {
-  margin: 6px 0;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#qChoices .choice.correct { background: #e6ffe6; }
-#qChoices .choice.wrong { background: #ffe6e6; }
