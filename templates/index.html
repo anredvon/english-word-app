@@ -3,21 +3,21 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta charset="UTF-8">
-  <title>지훈 영어단어 학습</title>
+  <title>🦖지훈이의 신나는 영어단어 학습🦕</title>
   <link rel="stylesheet" href="/static/style.css">
   <script defer src="/static/app.js"></script>
 </head>
 <body>
   <header>
-    <h1>지훈 영어단어 학습</h1>
-    <p>등록 · 카드 · 퀴즈 · 통계</p>
+    <h1>🦖지훈이의 신나는 영어단어 학습🦕</h1>
+    <p>단어등록 · 단어카드 확인· 다양한 퀴즈 Mode</p>
   </header>
 
   <main>
     <!-- 단일 단어 등록 -->
       <div class="container">
     <section class="panel">
-      <h2>단일 단어 등록</h2>
+      <h2>📥단일 단어 등록</h2>
       <form id="wordForm">
         <div class="row">
           <input id="word" type="text"placeholder="단어" required>
@@ -33,7 +33,7 @@
 
     <!-- 대량 등록 -->
       <section class="panel">
-          <h2>대량 등록</h2>
+          <h2>✏️대량 등록</h2>
           <!-- 열기 버튼 -->
           <button id="toggleBulk" class="accent">열기</button>
           <button id="btnStats" class="accent">통계</button>
@@ -52,38 +52,38 @@
 
     <!-- 단어 카드 -->
     <section class="panel">
-      <h2>단어 카드</h2>
+      <h2>📊단어 카드</h2>
       <div class="row wrap gap">
         <input id="filterDate" type="date">
         <button id="loadByDate" class="accent">날짜 조회</button>
         <input id="search" type="text" placeholder="검색(단어/뜻)">
         <!--<button id="btnSearch" class="accent">검색</button>-->
-        <select id="sort">
-          <option value="created_desc">최신 등록순</option>
-          <option value="alpha_asc">A-Z까지</option>
-          <option value="alpha_desc">Z-A까지</option>
-        </select>
-        <select id="quizMode">
-          <option value="en2ko">영어 ➝ 한국어</option>
-          <option value="ko2en">한국어 ➝ 영어</option>
-          <option value="cloze">빈칸 채우기</option>
-          <option value="en2ko_input">영어 ➝ 한국어:주관식</option>
-          <option value="ko2en_input">한국어 ➝ 영어:주관식</option>
-          <option value="cloze_input">빈칸 채우기:주관식</option>
-        </select>
-        <button id="btnQuiz" class="accent">퀴즈</button>
+        <!--<select id="sort">
+            <option value="created_desc">최신 등록순</option>
+            <option value="alpha_asc">A-Z까지</option>
+            <option value="alpha_desc">Z-A까지</option>
+          </select>-->
+          <select id="quizMode">
+            <option value="en2ko">영어 ➝ 한국어</option>
+            <option value="ko2en">한국어 ➝ 영어</option>
+            <option value="cloze">빈칸 채우기</option>
+            <option value="en2ko_input">영어 ➝ 한국어:주관식</option>
+            <option value="ko2en_input">한국어 ➝ 영어:주관식</option>
+            <option value="cloze_input">빈칸 채우기:주관식</option>
+          </select>
+          <button id="btnQuiz" class="accent">퀴즈</button>
 
-      </div>
-      <ul id="wordList"></ul>
-    </section>
-      </div>
-  </main>
+        </div>
+        <ul id="wordList"></ul>
+      </section>
+        </div>
+    </main>
 
-  <footer>
-    <p>© 2025 JiHun English Word App.</p>
-  </footer>
+    <footer>
+      <p>© 2025 JiHun English Word App.</p>
+    </footer>
 
-  <!-- 퀴즈 모달 -->
+    <!-- 퀴즈 모달 -->
   <div id="quizModal" class="modal hidden">
     <div class="modal-body">
       <div class="modal-head">
