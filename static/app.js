@@ -258,13 +258,12 @@ function nextQuestion(){
   qScore.textContent = `점수 ${quizState.score}`;
 }
  */
-
 function nextQuestion(){
   qChoices.innerHTML = "";
   qNext.disabled = true;
 
-  // ✅ 항상 초기화 (주관식 입력창 숨김)
-  $("qInputWrap").classList.add("hidden");
+  // 항상 주관식 입력창 숨김
+  qInputWrap.classList.add("hidden");
 
   const total = quizState.pool.length;
   if(quizState.idx >= total){
@@ -279,44 +278,45 @@ function nextQuestion(){
   const others = shuffle(quizState.pool.filter(w => w.id !== correct.id)).slice(0,3);
   let options = [];
 
-  if(mode === "en2ko"){
+  if(mode === "en2ko"){ // 영어 → 한국어 (선택형)
     qWord.textContent = correct.word;
     options = shuffle([correct, ...others]);
     options.forEach(opt => addChoice(opt.meaning, opt.id === correct.id));
   }
-  else if(mode === "ko2en"){
+  else if(mode === "ko2en"){ // 한국어 → 영어 (선택형)
     qWord.textContent = correct.meaning;
     options = shuffle([correct, ...others]);
     options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
   }
-  else if(mode === "cloze"){
+  else if(mode === "cloze"){ // 빈칸 채우기 (선택형)
     const sentence = (correct.example || `${correct.word} is ...`)
       .replace(new RegExp(correct.word, "ig"), "_____");
     qWord.textContent = sentence;
     options = shuffle([correct, ...others]);
     options.forEach(opt => addChoice(opt.word, opt.id === correct.id));
   }
-  else if(mode === "en2ko_input"){   // ✅ 영어 → 한국어 주관식
+  else if(mode === "en2ko_input"){   // 영어 → 한국어 (주관식)
     qWord.textContent = correct.word;
-    $("qInputWrap").classList.remove("hidden");
+    qInputWrap.classList.remove("hidden");
     qSubmit.onclick = ()=>checkInputAnswer(correct.meaning, correct.id);
   }
-  else if(mode === "ko2en_input"){   // ✅ 한국어 → 영어 주관식
+  else if(mode === "ko2en_input"){   // 한국어 → 영어 (주관식)
     qWord.textContent = correct.meaning;
-    $("qInputWrap").classList.remove("hidden");
+    qInputWrap.classList.remove("hidden");
     qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
-  else if(mode === "cloze_input"){   // ✅ 빈칸 채우기 주관식1
+  else if(mode === "cloze_input"){   // 빈칸 채우기 (주관식)
     const sentence = (correct.example || `${correct.word} is ...`)
       .replace(new RegExp(correct.word, "ig"), "_____");
     qWord.textContent = sentence;
-    $("qInputWrap").classList.remove("hidden");
+    qInputWrap.classList.remove("hidden");
     qSubmit.onclick = ()=>checkInputAnswer(correct.word, correct.id);
   }
 
   qCount.textContent = `${quizState.idx+1}/${total}`;
   qScore.textContent = `점수 ${quizState.score}`;
 }
+
 
 
 

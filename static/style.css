@@ -222,7 +222,7 @@ button.ghost:hover {
 }
 
 #filterDate {
-  width: 160px;    /* 날짜 inputbox 가로길이 */
+  width: 150px;    /* 날짜 inputbox 가로길이 */
   height: 36px;    /* 버튼 높이와 동일 */
 }
 
@@ -230,6 +230,11 @@ button.ghost:hover {
 #search{
   width: 150px;    /* 날짜 inputbox 가로길이 */
   height: 36px;    /* 버튼 높이와 동일 */
+}
+
+#date{
+       width: 150px;    /* 날짜 inputbox 가로길이 */
+       height: 36px;    /* 버튼 높이와 동일 */
 }
 
 
@@ -240,7 +245,7 @@ width: 150px;    /* 날짜 inputbox 가로길이 */
 
 
 #quizMode{
-  width: 200px;    /* 퀴즈모드 inputbox 가로길이 */
+  width: 150px;    /* 퀴즈모드 inputbox 가로길이 */
   height: 36px;    /* 버튼 높이와 동일 */
 }
 
