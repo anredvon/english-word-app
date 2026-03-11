@@ -1,0 +1,9 @@
+0. PythonAnywhere connect.
+
+1.[bash]
+cd ~/english-word-app
+git pull origin main
+
+2.[Web] --> Reload
+
+3. https://anredvon.pythonanywhere.com
