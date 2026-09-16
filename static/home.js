@@ -1,10 +1,11 @@
 /* Playful Dino Refined — learner navigation + home dashboard. */
 (() => {
-  if(!document.querySelector('link[data-commercial-polish]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/static/commercial-polish.css';link.dataset.commercialPolish='true';document.head.appendChild(link);}
+  const ensureStyle=(href,key)=>{if(!document.querySelector(`link[data-${key}]`)){const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset[key]='true';document.head.appendChild(link);}};
+  ensureStyle('/static/commercial-polish.css','commercialPolish');ensureStyle('/static/visual-fix.css','visualFix');
   const ASSET='/static/assets/mascot/';
   const mascot=(file,cls,alt='')=>{const img=document.createElement('img');img.src=ASSET+file;img.className=cls;img.alt=alt;img.decoding='async';return img;};
   function mountMascots(){
-    const icon=document.querySelector('.app-icon');if(icon){icon.textContent='';icon.classList.add('mascot-mini');icon.appendChild(mascot('dino_home_book.png','mascot-mini-img',''));}
+    const icon=document.querySelector('.app-icon');if(icon&&!icon.querySelector('img')){icon.textContent='';icon.classList.add('mascot-mini');icon.appendChild(mascot('dino_home_book.png','mascot-mini-img',''));}
     const face=document.querySelector('.dino-face');if(face)face.replaceWith(mascot('dino_home_book.png','dino-face-img','책을 든 공룡 친구'));
     const hero=document.querySelector('.hero-dino');if(hero)hero.replaceWith(mascot('dino_home_book.png','hero-mascot','영어책을 든 공룡 친구'));
     document.querySelector('.hero-book')?.remove();
@@ -12,9 +13,9 @@
     const result=document.querySelector('.result-dino');if(result)result.replaceWith(mascot('dino_success.png','result-mascot','기뻐하는 공룡 친구'));
     const history=document.querySelector('.history-dino');if(history)history.replaceWith(mascot('dino_empty_reading.png','history-mascot','책 읽는 공룡 친구'));
     const empty=document.querySelector('[data-study-stage="empty"] .study-status-card');if(empty&&!empty.querySelector('.state-mascot'))empty.prepend(mascot('dino_empty_reading.png','state-mascot',''));
-    const loading=document.querySelector('[data-study-stage="loading"] .study-status-card');if(loading&&!loading.querySelector('.state-mascot'))loading.prepend(mascot('dino_study.png','state-mascot',''));
-    const error=document.querySelector('[data-study-stage="error"] .study-status-card');if(error&&!error.querySelector('.state-mascot'))error.prepend(mascot('dino_review_thinking.png','state-mascot',''));
-    const review=document.querySelector('[data-study-stage="review"] .study-card');if(review&&!review.querySelector('.card-mascot'))review.prepend(mascot('dino_review_thinking.png','card-mascot','생각하는 공룡 친구'));
+    const loading=document.querySelector('[data-study-stage="loading"] .study-status-card');if(loading&&!loading.querySelector('.state-mascot'))loading.prepend(mascot('dino_empty_reading.png','state-mascot',''));
+    const error=document.querySelector('[data-study-stage="error"] .study-status-card');if(error&&!error.querySelector('.state-mascot'))error.prepend(mascot('dino_empty_reading.png','state-mascot',''));
+    const review=document.querySelector('[data-study-stage="review"] .study-card');if(review&&!review.querySelector('.card-mascot'))review.prepend(mascot('dino_empty_reading.png','card-mascot','책 읽는 공룡 친구'));
   }
   mountMascots();
   const views={home:document.getElementById('homeView'),wordbook:document.getElementById('wordbookView'),wrong:document.getElementById('wrongView'),history:document.getElementById('historyView')},study=document.getElementById('studyView'),navItems=[...document.querySelectorAll('.app-nav-item')];if(!views.home||!views.wordbook)return;
