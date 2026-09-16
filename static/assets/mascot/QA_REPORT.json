@@ -1,0 +1,92 @@
+{
+  "source": "a_clean_transparent_background_checkerboard_png_p.png",
+  "asset_count": 6,
+  "automated_gate": "PASS",
+  "issues": [],
+  "assets": [
+    {
+      "file": "dino_home_book.png",
+      "size": [
+        376,
+        494
+      ],
+      "mode": "RGBA",
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_ratio": 0.3185,
+      "opaque_ratio": 0.6398,
+      "edge_touch": false,
+      "sha256": "973ec3d82c84c4f5ee3d9a65efb6ea80f300f119295fb00eba7e8c5d1e63ba40"
+    },
+    {
+      "file": "dino_study.png",
+      "size": [
+        482,
+        447
+      ],
+      "mode": "RGBA",
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_ratio": 0.3514,
+      "opaque_ratio": 0.5966,
+      "edge_touch": false,
+      "sha256": "78d0e47fec6fb5ac2290d2dc51a530561f103260faaa58f04c46542fb1a8b3ad"
+    },
+    {
+      "file": "dino_handwriting.png",
+      "size": [
+        424,
+        480
+      ],
+      "mode": "RGBA",
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_ratio": 0.3732,
+      "opaque_ratio": 0.5612,
+      "edge_touch": false,
+      "sha256": "d3fd4a26b6e17511d976a07d25acae87a9cdea474e72fa97ecad610f40ffcd70"
+    },
+    {
+      "file": "dino_success.png",
+      "size": [
+        454,
+        476
+      ],
+      "mode": "RGBA",
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_ratio": 0.3802,
+      "opaque_ratio": 0.5697,
+      "edge_touch": false,
+      "sha256": "ee60fa3b2fb4d4f899c8fbe3e78e257c24b654de743227f8ede313b0fe4b905b"
+    },
+    {
+      "file": "dino_review_thinking.png",
+      "size": [
+        463,
+        466
+      ],
+      "mode": "RGBA",
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_ratio": 0.4452,
+      "opaque_ratio": 0.5134,
+      "edge_touch": false,
+      "sha256": "ac9e66ce7efbd312dbd5da5b07c6d72e3bbf88778e296ff84452fd4494c230b7"
+    },
+    {
+      "file": "dino_empty_reading.png",
+      "size": [
+        463,
+        424
+      ],
+      "mode": "RGBA",
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_ratio": 0.3588,
+      "opaque_ratio": 0.6065,
+      "edge_touch": false,
+      "sha256": "0b97903576daae26e0889e962a96c81db44f7bcde7268d3e5ab4574c04b5ac4a"
+    }
+  ]
+}
