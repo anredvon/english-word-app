@@ -1,0 +1,12 @@
+/* Desktop visual QA hotfix — keeps production mascot art inside intentional bounds. */
+.redesign-shell header .header-inner{min-height:64px}
+.redesign-shell .app-icon.mascot-mini{display:grid!important;place-items:center!important;flex:0 0 46px!important;width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important;min-height:46px!important;max-height:46px!important;overflow:hidden!important;border-radius:14px!important;padding:0!important}
+.redesign-shell .app-icon.mascot-mini img,.redesign-shell .mascot-mini-img{display:block!important;width:44px!important;height:44px!important;max-width:44px!important;max-height:44px!important;object-fit:contain!important;transform:none!important}
+.redesign-shell .header-left{min-width:0;align-items:center}.redesign-shell .header-text{min-width:0}
+.home-view,.wordbook-view,.wrong-view,.history-view{position:relative}
+.study-hero{min-height:330px}.hero-scene{min-width:0}.hero-mascot{max-width:82%;object-position:center bottom}
+.dino-face-img,.study-mascot-img,.history-mascot,.state-mascot,.card-mascot,.result-mascot{display:block;max-width:100%}
+.wordbook-list .word-card{overflow:hidden}.wordbook-list .meta-date{color:#7c8b82!important;font-size:12px!important;white-space:nowrap}.wordbook-list .meta-score{white-space:nowrap}.wordbook-list .card-actions{white-space:nowrap}
+.history-card{overflow:hidden}.history-chart{min-height:220px}
+@media(min-width:1200px){.home-view,.wordbook-view,.wrong-view,.history-view{max-width:1120px}.study-hero{grid-template-columns:1.05fr .95fr}.hero-mascot{width:300px;height:300px}.home-greeting{align-items:center}}
+@media(max-width:900px){.redesign-shell .app-icon.mascot-mini{flex-basis:42px!important;width:42px!important;height:42px!important;min-width:42px!important;max-width:42px!important}.redesign-shell .app-icon.mascot-mini img{width:40px!important;height:40px!important}.wordbook-list .word-card{grid-template-columns:1fr 1fr!important}.wordbook-list .meta,.wordbook-list .card-actions{grid-column:auto}}
