@@ -1,4 +1,4 @@
-const CACHE_NAME = "ewa-playful-dino-v2";
+const CACHE_NAME = "ewa-playful-dino-v3";
 const urlsToCache = ["/","/static/style.css","/static/redesign.css","/static/app.js","/static/study.js","/static/wordbook.js","/static/wrong.js","/static/history.js","/static/home.js","/static/manifest.json","/static/icon-192.png","/static/icon-512.png"];
 self.addEventListener("install",event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(urlsToCache)))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE_NAME?caches.delete(k):null))).then(()=>self.clients.claim()))});
