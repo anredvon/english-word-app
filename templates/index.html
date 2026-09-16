@@ -1,79 +1,64 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta charset="UTF-8">
+  <meta name="theme-color" content="#f4f8f1">
   <title>🦖 지훈이의 영어단어</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Jua&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/redesign.css">
   <script defer src="/static/app.js"></script>
 </head>
-<body>
+<body class="redesign-shell">
 
   <div class="bg-orb orb1"></div>
   <div class="bg-orb orb2"></div>
   <div class="bg-orb orb3"></div>
-
   <div id="feedbackOverlay" class="feedback-overlay"></div>
 
   <header>
     <div class="header-inner">
       <div class="header-left">
-        <div class="app-icon">🦖</div>
+        <div class="app-icon" aria-hidden="true">🦖</div>
         <div class="header-text">
           <h1>지훈이의 영어단어</h1>
-          <p>오늘도 신나게 공부해보자! 💪</p>
+          <p>오늘도 한 걸음씩, 꾸준하게!</p>
         </div>
       </div>
-      <button id="btnStats" class="stats-btn">
-        <span>📊</span><span>통계</span>
+      <button id="btnStats" class="stats-btn" aria-label="학습 통계 열기">
+        <span aria-hidden="true">📊</span><span>통계</span>
       </button>
     </div>
   </header>
 
-  <main>
-    <aside class="sidebar">
+  <div class="migration-note">Playful Dino Refined · 단어장 기능을 유지한 채 학습 중심 화면으로 개편 중</div>
 
+  <main id="wordbookView">
+    <aside class="sidebar">
       <div class="card">
         <div class="card-header">
           <span class="card-icon">✏️</span>
           <h2>단어 등록</h2>
         </div>
         <form id="wordForm">
-          <div class="field-group">
-            <label>영어 단어</label>
-            <input id="word" type="text" placeholder="apple" required>
-          </div>
-          <div class="field-group">
-            <label>한국어 뜻</label>
-            <input id="meaning" type="text" placeholder="사과" required>
-          </div>
-          <div class="field-group">
-            <label>예문 <span class="optional">선택</span></label>
-            <input id="example" type="text" placeholder="I like apples.">
-          </div>
-          <div class="field-group">
-            <label>등록일</label>
-            <input id="regDate" type="date">
-          </div>
+          <div class="field-group"><label>영어 단어</label><input id="word" type="text" placeholder="apple" required></div>
+          <div class="field-group"><label>한국어 뜻</label><input id="meaning" type="text" placeholder="사과" required></div>
+          <div class="field-group"><label>예문 <span class="optional">선택</span></label><input id="example" type="text" placeholder="I like apples."></div>
+          <div class="field-group"><label>등록일</label><input id="regDate" type="date"></div>
           <button type="submit" class="btn-primary full">➕ 단어 추가</button>
         </form>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <span class="card-icon">📋</span>
-          <h2>대량 등록</h2>
-          <button id="toggleBulk" class="toggle-btn">열기</button>
+          <span class="card-icon">📋</span><h2>대량 등록</h2><button id="toggleBulk" class="toggle-btn">열기</button>
         </div>
         <div id="bulkSection" class="hidden">
           <p class="hint-text">💡 <code>apple - 사과 | I like an apple.</code></p>
           <textarea id="bulkInput" placeholder="한 줄에 단어 하나씩&#10;apple - 사과&#10;banana - 바나나"></textarea>
-          <div class="field-group mt12">
-            <label>등록일</label>
-            <input type="date" id="bulkDate">
-          </div>
+          <div class="field-group mt12"><label>등록일</label><input type="date" id="bulkDate"></div>
           <div class="btn-row mt12">
             <button id="bulkParse" class="btn-ghost">🔍 미리보기</button>
             <button id="bulkApply" class="btn-primary" disabled>✅ 등록</button>
@@ -83,22 +68,17 @@
           <ul id="bulkPreview" class="bulk-preview-list"></ul>
         </div>
       </div>
-
     </aside>
 
     <section class="content">
-
       <div class="control-bar">
         <div class="control-left">
-          <div class="search-wrap">
-            <span class="search-ico">🔍</span>
-            <input id="search" type="text" placeholder="단어 또는 뜻 검색...">
-          </div>
+          <div class="search-wrap"><span class="search-ico">🔍</span><input id="search" type="text" placeholder="단어 또는 뜻 검색..."></div>
           <input id="filterDate" type="date" class="date-input">
           <button id="loadByDate" class="btn-secondary">📅 조회</button>
         </div>
         <div class="control-right">
-          <select id="quizMode">
+          <select id="quizMode" aria-label="퀴즈 방식">
             <option value="en2ko">영어 → 한국어</option>
             <option value="ko2en">한국어 → 영어</option>
             <option value="cloze">빈칸 채우기</option>
@@ -109,34 +89,29 @@
           <button id="btnQuiz" class="btn-quiz">🎮 퀴즈 시작!</button>
         </div>
       </div>
-
       <ul id="wordList" class="word-grid"></ul>
-
     </section>
   </main>
 
   <footer><p>🦖 지훈이의 영어단어 앱 · Made with ❤️</p></footer>
 
-  <!-- 퀴즈 모달 -->
+  <nav class="app-nav" aria-label="주요 메뉴">
+    <a class="app-nav-item" href="#homeView" aria-label="홈"><span class="nav-icon">🏠</span><span>홈</span></a>
+    <a class="app-nav-item is-active" href="#wordbookView" aria-current="page" aria-label="단어장"><span class="nav-icon">📚</span><span>단어장</span></a>
+    <a class="app-nav-item" href="#wrongView" aria-label="오답노트"><span class="nav-icon">⭐</span><span>오답</span></a>
+    <a class="app-nav-item" href="#historyView" aria-label="학습기록"><span class="nav-icon">📊</span><span>기록</span></a>
+  </nav>
+
   <div id="quizModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-body quiz-modal">
-      <div class="modal-header">
-        <div class="modal-title">🎮 퀴즈</div>
-        <button id="quizClose" class="close-btn">✕</button>
-      </div>
-      <div class="progress-track">
-        <div id="quizProgressBar" class="progress-fill"></div>
-      </div>
-      <div class="quiz-meta">
-        <span id="qCount">1/10</span>
-        <span id="qScore">점수 0</span>
-      </div>
+      <div class="modal-header"><div class="modal-title">🎮 퀴즈</div><button id="quizClose" class="close-btn">✕</button></div>
+      <div class="progress-track"><div id="quizProgressBar" class="progress-fill"></div></div>
+      <div class="quiz-meta"><span id="qCount">1/10</span><span id="qScore">점수 0</span></div>
       <div id="qWord" class="quiz-question">—</div>
       <div id="qChoices" class="choices-grid"></div>
       <div id="qInputWrap" class="quiz-input-wrap hidden">
-        <input id="qInput" type="text" placeholder="정답을 입력하세요">
-        <button id="qSubmit" class="btn-primary">제출 ✔</button>
+        <input id="qInput" type="text" placeholder="정답을 입력하세요"><button id="qSubmit" class="btn-primary">제출 ✔</button>
       </div>
       <div class="quiz-footer">
         <button id="qNext" class="btn-primary" disabled>다음 ➡</button>
@@ -146,30 +121,14 @@
     </div>
   </div>
 
-  <!-- 통계 모달 -->
   <div id="statsModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-body stats-modal">
-      <div class="modal-header">
-        <div class="modal-title">📊 학습 통계</div>
-        <button id="statsClose" class="close-btn">✕</button>
-      </div>
+      <div class="modal-header"><div class="modal-title">📊 학습 통계</div><button id="statsClose" class="close-btn">✕</button></div>
       <div class="stats-grid">
-        <div class="stat-tile">
-          <div class="stat-emoji">📚</div>
-          <div class="stat-val" id="stTotal">0</div>
-          <div class="stat-lbl">총 단어</div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-emoji">🎯</div>
-          <div class="stat-val" id="stAcc">0%</div>
-          <div class="stat-lbl">정답률</div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-emoji">🌟</div>
-          <div class="stat-val" id="stToday">0</div>
-          <div class="stat-lbl">오늘 등록</div>
-        </div>
+        <div class="stat-tile"><div class="stat-emoji">📚</div><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">총 단어</div></div>
+        <div class="stat-tile"><div class="stat-emoji">🎯</div><div class="stat-val" id="stAcc">0%</div><div class="stat-lbl">정답률</div></div>
+        <div class="stat-tile"><div class="stat-emoji">🌟</div><div class="stat-val" id="stToday">0</div><div class="stat-lbl">오늘 등록</div></div>
       </div>
     </div>
   </div>
