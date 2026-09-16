@@ -1,27 +1,17 @@
 {
-  "name": "영어 단어 학습 앱",
-  "short_name": "단어앱",
-  "description": "단어 등록 → 카드 보기 → 퀴즈 → 통계까지 한 번에!",
+  "name": "지훈이의 영어단어",
+  "short_name": "영어단어",
+  "description": "매일 새 단어를 배우고, 퀴즈와 오답 복습으로 익히는 영어 단어 학습 앱",
   "start_url": "/?source=pwa",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ff6600",
+  "background_color": "#f4f8f1",
+  "theme_color": "#3f8f5b",
   "icons": [
-    {
-      "src": "/static/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/static/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    {"src":"/static/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"/static/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ],
   "id": "/",
   "scope": "/",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "lang": "ko-KR"
 }
