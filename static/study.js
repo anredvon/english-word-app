@@ -1,130 +1,28 @@
-/* Guided Today's Study — learn -> multiple choice -> typed answer -> review -> result.
-   Persists quiz results through the existing result API. */
+/* Guided Today's Study — learn -> multiple choice -> typed answer -> review -> result. */
 (() => {
-  const view = document.getElementById('studyView');
-  if (!view) return;
-
-  const state = { words: [], learnIndex: 0, quizIndex: 0, typedIndex: 0, reviewIndex: 0, wrong: [], correct: 0, attempts: 0 };
-  const $ = id => document.getElementById(id);
-  const shuffle = input => { const a=[...input]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
-  const today = () => new Date().toISOString().slice(0,10);
-
-  async function requestWords() {
-    let response = await fetch(`/api/words?date=${today()}`);
-    if (!response.ok) throw new Error('today words failed');
-    let words = await response.json();
-    if (!words.length) {
-      response = await fetch('/api/words');
-      if (!response.ok) throw new Error('words failed');
-      words = await response.json();
-    }
-    return words.slice(0, 10);
-  }
-
-  async function saveResult(word, isCorrect) {
-    try { await fetch(`/api/words/${word.id}/result`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ correct:isCorrect }) }); }
-    catch (_) { /* UI remains usable; legacy API behavior is unchanged. */ }
-  }
-
-  function open() {
-    document.getElementById('homeView')?.classList.add('hidden');
-    document.getElementById('wordbookView')?.classList.add('hidden');
-    view.classList.remove('hidden');
-    document.querySelector('.app-nav')?.classList.add('study-nav-hidden');
-    window.scrollTo({top:0});
-    start();
-  }
-
-  function close() {
-    view.classList.add('hidden');
-    document.querySelector('.app-nav')?.classList.remove('study-nav-hidden');
-    document.querySelector('.app-nav-item[data-view="home"]')?.click();
-  }
-
-  async function start() {
-    setStage('loading');
-    try {
-      state.words = await requestWords();
-      Object.assign(state, { learnIndex:0, quizIndex:0, typedIndex:0, reviewIndex:0, wrong:[], correct:0, attempts:0 });
-      if (!state.words.length) return setStage('empty');
-      renderLearn();
-    } catch (_) { setStage('error'); }
-  }
-
-  function setStage(name) {
-    document.querySelectorAll('[data-study-stage]').forEach(el => el.classList.toggle('hidden', el.dataset.studyStage !== name));
-  }
-  function progress(label, index, total) {
-    $('studyPhase').textContent = label;
-    $('studyCount').textContent = `${Math.min(index + 1,total)} / ${total}`;
-    $('studyProgressFill').style.width = `${total ? Math.round(index / total * 100) : 0}%`;
-  }
-  function speak(word) {
-    if (!('speechSynthesis' in window)) return;
-    const u = new SpeechSynthesisUtterance(word); u.lang='en-US'; u.rate=.95; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
-  }
-
-  function renderLearn() {
-    setStage('learn');
-    const w = state.words[state.learnIndex];
-    progress('1 · 단어 만나기', state.learnIndex, state.words.length);
-    $('learnWord').textContent = w.word;
-    $('learnMeaning').textContent = w.meaning || '';
-    $('learnExample').textContent = w.example || '예문이 등록되지 않았어요.';
-    $('learnSpeak').onclick = () => speak(w.word);
-  }
-  $('learnKnow')?.addEventListener('click', () => { state.learnIndex++; state.learnIndex < state.words.length ? renderLearn() : renderChoice(); });
-  $('learnHard')?.addEventListener('click', () => { const w=state.words[state.learnIndex]; if(!state.wrong.some(x=>x.id===w.id)) state.wrong.push(w); state.learnIndex++; state.learnIndex < state.words.length ? renderLearn() : renderChoice(); });
-
-  function renderChoice() {
-    setStage('choice');
-    const w = state.words[state.quizIndex];
-    progress('2 · 뜻 고르기', state.quizIndex, state.words.length);
-    $('choiceWord').textContent = w.word;
-    const alternatives = shuffle(state.words.filter(x=>x.id!==w.id)).slice(0,3);
-    const choices = shuffle([w,...alternatives]);
-    const box = $('studyChoices'); box.innerHTML='';
-    choices.forEach(item => {
-      const b=document.createElement('button'); b.type='button'; b.className='study-choice'; b.textContent=item.meaning || item.word;
-      b.onclick=()=>answerChoice(b,item.id===w.id,w);
-      box.appendChild(b);
-    });
-  }
-  async function answerChoice(button, ok, word) {
-    [...$('studyChoices').children].forEach(b=>b.disabled=true);
-    button.classList.add(ok?'correct':'wrong'); state.attempts++; if(ok) state.correct++; else if(!state.wrong.some(x=>x.id===word.id)) state.wrong.push(word);
-    await saveResult(word,ok); setTimeout(()=>{ state.quizIndex++; state.quizIndex < state.words.length ? renderChoice() : renderTyped(); },450);
-  }
-
-  function renderTyped() {
-    setStage('typed');
-    const w=state.words[state.typedIndex]; progress('3 · 직접 써보기',state.typedIndex,state.words.length);
-    $('typedMeaning').textContent=w.meaning || ''; $('studyTypedInput').value=''; $('studyTypedFeedback').textContent=''; $('studyTypedInput').focus();
-  }
-  $('studyTypedSubmit')?.addEventListener('click', submitTyped);
-  $('studyTypedInput')?.addEventListener('keydown', e=>{if(e.key==='Enter') submitTyped();});
-  async function submitTyped() {
-    const w=state.words[state.typedIndex], input=$('studyTypedInput').value.trim().toLowerCase(); if(!input) return;
-    const ok=input===String(w.word||'').trim().toLowerCase(); state.attempts++; if(ok) state.correct++; else if(!state.wrong.some(x=>x.id===w.id)) state.wrong.push(w);
-    $('studyTypedFeedback').textContent=ok?'좋아! 정확해요 ✓':`정답은 ${w.word}`; $('studyTypedFeedback').className=`study-feedback ${ok?'ok':'no'}`;
-    await saveResult(w,ok); setTimeout(()=>{state.typedIndex++; state.typedIndex<state.words.length?renderTyped():startReview();},650);
-  }
-
-  function startReview() { state.reviewIndex=0; state.wrong.length ? renderReview() : renderResult(); }
-  function renderReview() {
-    setStage('review'); const w=state.wrong[state.reviewIndex]; progress('4 · 어려운 단어 다시보기',state.reviewIndex,state.wrong.length);
-    $('reviewWord').textContent=w.word; $('reviewMeaning').textContent=w.meaning || ''; $('reviewExample').textContent=w.example || '한 번 더 보고 기억해요.';
-  }
+  const view=document.getElementById('studyView'); if(!view)return;
+  const state={words:[],learnIndex:0,quizIndex:0,typedIndex:0,reviewIndex:0,wrong:[],correct:0,attempts:0,sourceWords:null};
+  const $=id=>document.getElementById(id),shuffle=input=>{const a=[...input];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;},today=()=>new Date().toISOString().slice(0,10);
+  async function requestWords(){let r=await fetch(`/api/words?date=${today()}`);if(!r.ok)throw new Error();let words=await r.json();if(!words.length){r=await fetch('/api/words');if(!r.ok)throw new Error();words=await r.json();}return words.slice(0,10);}
+  async function saveResult(w,ok){try{await fetch(`/api/words/${w.id}/result`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correct:ok})});}catch(_){}}
+  function showShell(){['homeView','wordbookView','wrongView','historyView'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));view.classList.remove('hidden');document.querySelector('.app-nav')?.classList.add('study-nav-hidden');window.scrollTo({top:0});}
+  function open(){state.sourceWords=null;showShell();start();}
+  function openWithWords(words){state.sourceWords=[...(words||[])].slice(0,10);showShell();start();}
+  function close(){view.classList.add('hidden');document.querySelector('.app-nav')?.classList.remove('study-nav-hidden');document.querySelector('.app-nav-item[data-view="home"]')?.click();}
+  async function start(){setStage('loading');try{state.words=state.sourceWords?.length?[...state.sourceWords]:await requestWords();Object.assign(state,{learnIndex:0,quizIndex:0,typedIndex:0,reviewIndex:0,wrong:[],correct:0,attempts:0});if(!state.words.length)return setStage('empty');renderLearn();}catch(_){setStage('error');}}
+  function setStage(name){document.querySelectorAll('[data-study-stage]').forEach(el=>el.classList.toggle('hidden',el.dataset.studyStage!==name));}
+  function progress(label,index,total){$('studyPhase').textContent=label;$('studyCount').textContent=`${Math.min(index+1,total)} / ${total}`;$('studyProgressFill').style.width=`${total?Math.round(index/total*100):0}%`;}
+  function speak(word){if(!('speechSynthesis'in window))return;const u=new SpeechSynthesisUtterance(word);u.lang='en-US';u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u);}
+  function renderLearn(){setStage('learn');const w=state.words[state.learnIndex];progress('1 · 단어 만나기',state.learnIndex,state.words.length);$('learnWord').textContent=w.word;$('learnMeaning').textContent=w.meaning||'';$('learnExample').textContent=w.example||'예문이 등록되지 않았어요.';$('learnSpeak').onclick=()=>speak(w.word);}
+  $('learnKnow')?.addEventListener('click',()=>{state.learnIndex++;state.learnIndex<state.words.length?renderLearn():renderChoice();});
+  $('learnHard')?.addEventListener('click',()=>{const w=state.words[state.learnIndex];if(!state.wrong.some(x=>x.id===w.id))state.wrong.push(w);state.learnIndex++;state.learnIndex<state.words.length?renderLearn():renderChoice();});
+  function renderChoice(){setStage('choice');const w=state.words[state.quizIndex];progress('2 · 뜻 고르기',state.quizIndex,state.words.length);$('choiceWord').textContent=w.word;const alternatives=shuffle(state.words.filter(x=>x.id!==w.id)).slice(0,3),choices=shuffle([w,...alternatives]),box=$('studyChoices');box.innerHTML='';choices.forEach(item=>{const b=document.createElement('button');b.type='button';b.className='study-choice';b.textContent=item.meaning||item.word;b.onclick=()=>answerChoice(b,item.id===w.id,w);box.appendChild(b);});}
+  async function answerChoice(button,ok,w){[...$('studyChoices').children].forEach(b=>b.disabled=true);button.classList.add(ok?'correct':'wrong');state.attempts++;if(ok)state.correct++;else if(!state.wrong.some(x=>x.id===w.id))state.wrong.push(w);await saveResult(w,ok);setTimeout(()=>{state.quizIndex++;state.quizIndex<state.words.length?renderChoice():renderTyped();},450);}
+  function renderTyped(){setStage('typed');const w=state.words[state.typedIndex];progress('3 · 직접 써보기',state.typedIndex,state.words.length);$('typedMeaning').textContent=w.meaning||'';$('studyTypedInput').value='';$('studyTypedFeedback').textContent='';$('studyTypedInput').focus();}
+  $('studyTypedSubmit')?.addEventListener('click',submitTyped);$('studyTypedInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitTyped();});
+  async function submitTyped(){const w=state.words[state.typedIndex],input=$('studyTypedInput').value.trim().toLowerCase();if(!input)return;const ok=input===String(w.word||'').trim().toLowerCase();state.attempts++;if(ok)state.correct++;else if(!state.wrong.some(x=>x.id===w.id))state.wrong.push(w);$('studyTypedFeedback').textContent=ok?'좋아! 정확해요 ✓':`정답은 ${w.word}`;$('studyTypedFeedback').className=`study-feedback ${ok?'ok':'no'}`;await saveResult(w,ok);setTimeout(()=>{state.typedIndex++;state.typedIndex<state.words.length?renderTyped():startReview();},650);}
+  function startReview(){state.reviewIndex=0;state.wrong.length?renderReview():renderResult();}function renderReview(){setStage('review');const w=state.wrong[state.reviewIndex];progress('4 · 어려운 단어 다시보기',state.reviewIndex,state.wrong.length);$('reviewWord').textContent=w.word;$('reviewMeaning').textContent=w.meaning||'';$('reviewExample').textContent=w.example||'한 번 더 보고 기억해요.';}
   $('reviewNext')?.addEventListener('click',()=>{state.reviewIndex++;state.reviewIndex<state.wrong.length?renderReview():renderResult();});
-
-  function renderResult() {
-    setStage('result'); $('studyProgressFill').style.width='100%'; $('studyPhase').textContent='오늘 학습 완료'; $('studyCount').textContent='완료';
-    const accuracy=state.attempts?Math.round(state.correct*100/state.attempts):100;
-    $('resultScore').textContent=`${state.correct} / ${state.attempts}`; $('resultAccuracy').textContent=`${accuracy}%`; $('resultReview').textContent=state.wrong.length;
-    $('resultMessage').textContent=state.wrong.length?'어려웠던 단어도 다시 봤어. 오늘 공부 끝!':'오늘 단어를 아주 잘 해냈어! 🌿';
-  }
-
-  $('studyClose')?.addEventListener('click',close); $('studyRetry')?.addEventListener('click',start); $('studyHome')?.addEventListener('click',close);
-  $('studyReload')?.addEventListener('click',start); $('studyEmptyWordbook')?.addEventListener('click',()=>{close();document.querySelector('.app-nav-item[data-view="wordbook"]')?.click();});
-  window.DinoStudy={open};
+  function renderResult(){setStage('result');$('studyProgressFill').style.width='100%';$('studyPhase').textContent=state.sourceWords?'오답 복습 완료':'오늘 학습 완료';$('studyCount').textContent='완료';const accuracy=state.attempts?Math.round(state.correct*100/state.attempts):100;$('resultScore').textContent=`${state.correct} / ${state.attempts}`;$('resultAccuracy').textContent=`${accuracy}%`;$('resultReview').textContent=state.wrong.length;$('resultMessage').textContent=state.wrong.length?'어려웠던 단어도 다시 봤어. 오늘 공부 끝!':'오늘 단어를 아주 잘 해냈어! 🌿';}
+  $('studyClose')?.addEventListener('click',close);$('studyRetry')?.addEventListener('click',start);$('studyHome')?.addEventListener('click',close);$('studyReload')?.addEventListener('click',start);$('studyEmptyWordbook')?.addEventListener('click',()=>{close();document.querySelector('.app-nav-item[data-view="wordbook"]')?.click();});window.DinoStudy={open,openWithWords};
 })();
