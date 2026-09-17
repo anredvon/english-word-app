@@ -1,4 +1,4 @@
-const CACHE_NAME = "ewa-playful-dino-v21";
+const CACHE_NAME = "ewa-playful-dino-v22";
 const urlsToCache = ["/","/static/style.css","/static/redesign.css","/static/commercial-polish.css","/static/visual-fix.css","/static/wordbook-product.css","/static/type-system.css","/static/wrong-product.css","/static/modal-product.css","/static/handwriting.css","/static/app.js","/static/study.js","/static/wordbook.js","/static/wrong.js","/static/history.js","/static/home.js","/static/manifest.json","/static/icon-192.png","/static/icon-512.png","/static/assets/mascot/dino_home_book.png","/static/assets/mascot/dino_handwriting.png","/static/assets/mascot/dino_success.png","/static/assets/mascot/dino_empty_reading.png"];
 self.addEventListener("install",event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(urlsToCache)))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE_NAME?caches.delete(k):null))).then(()=>self.clients.claim()))});
