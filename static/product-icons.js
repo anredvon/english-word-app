@@ -10,39 +10,35 @@
     alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
     award:'<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
     search:'<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
-    plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
-    close:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
-    back:'<path d="m15 18-6-6 6-6"/>',
     speaker:'<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/>',
     more:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'
   };
   const svg=name=>`<span class="product-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${icons[name]||''}</svg></span>`;
-  const replace=(el,name)=>{if(!el||!icons[name])return;el.innerHTML=svg(name);el.dataset.productIcon=name;};
-  const replaceMany=(selector,name)=>document.querySelectorAll(selector).forEach(el=>replace(el,name));
+  const replace=(el,name)=>{if(!el||!icons[name])return;el.innerHTML=svg(name);el.dataset.productIcon=name;el.classList.add('product-icon-host');};
+  const replaceAt=(selector,name)=>replace(document.querySelector(selector),name);
   function mount(){
     const navMap={home:'home',wordbook:'book',wrong:'review',history:'history'};
     document.querySelectorAll('.app-nav-item').forEach(el=>replace(el.querySelector('.ui-icon'),navMap[el.dataset.view]||'home'));
-    replace(document.querySelector('.wordbook-search .ui-icon'),'search');
+    replaceAt('.wordbook-search .ui-icon','search');
     document.querySelectorAll('.word-more').forEach(el=>replace(el,'more'));
     document.querySelectorAll('.btn-speak').forEach(el=>{if(el.classList.contains('word-speak-icon'))return;el.querySelector('.product-icon')?.remove();el.insertAdjacentHTML('afterbegin',svg('speaker'));});
 
-    /* Home metrics: meaning is fixed, never inferred from old glyph geometry. */
-    const homeStats=document.querySelectorAll('#homeView .home-stat-card, #homeView .stat-card, #homeView [data-home-stat]');
-    const homeNames=['target','learned','book'];homeStats.forEach((card,i)=>{const holder=card.querySelector('.ui-icon,.stat-icon,.home-stat-icon');if(holder&&homeNames[i])replace(holder,homeNames[i]);});
+    /* Bind directly to the actual legacy HTML classes/metric IDs. */
+    replaceAt('#homeAccuracy','target');
+    const homeAccuracy=document.getElementById('homeAccuracy')?.closest('article');replace(homeAccuracy?.querySelector('.ui-icon'),'target');
+    const homeReviewed=document.getElementById('homeReviewed')?.closest('article');replace(homeReviewed?.querySelector('.ui-icon'),'learned');
+    const homeTotal=document.getElementById('homeTotal')?.closest('article');replace(homeTotal?.querySelector('.ui-icon'),'book');
 
-    /* Wrong-note summary: review queue / accumulated mistakes / mastery. */
-    const wrong=document.querySelectorAll('#wrongView .wrong-summary article>span.ui-icon, #wrongView .wrong-summary .ui-icon');
-    replace(wrong[0],'review');replace(wrong[1],'alert');replace(wrong[2],'award');
+    const wrongTotal=document.getElementById('wrongTotal')?.closest('article');replace(wrongTotal?.querySelector('.ui-icon'),'review');
+    const wrongAttempts=document.getElementById('wrongAttempts')?.closest('article');replace(wrongAttempts?.querySelector('.ui-icon'),'alert');
+    const wrongMastered=document.getElementById('wrongMastered')?.closest('article');replace(wrongMastered?.querySelector('.ui-icon'),'award');
 
-    /* History summary: learned / attempts / accuracy / all words. */
-    const history=document.querySelectorAll('#historyView .history-summary .ui-icon, #historyView .history-stat-card .ui-icon, #historyView [data-history-stat] .ui-icon');
-    ['learned','history','target','book'].forEach((name,i)=>replace(history[i],name));
-
-    /* Remove semantic leftovers from old CSS-drawn glyphs when product SVG exists. */
-    replaceMany('[data-icon="target"]','target');replaceMany('[data-icon="book"]','book');replaceMany('[data-icon="learned"]','learned');replaceMany('[data-icon="review"]','review');replaceMany('[data-icon="alert"]','alert');replaceMany('[data-icon="award"]','award');replaceMany('[data-icon="history"]','history');
+    const historyWeek=document.getElementById('historyWeekWords')?.closest('article');replace(historyWeek?.querySelector('.ui-icon'),'learned');
+    const historyAttempts=document.getElementById('historyAttempts')?.closest('article');replace(historyAttempts?.querySelector('.ui-icon'),'history');
+    const historyAccuracy=document.getElementById('historyAccuracy')?.closest('article');replace(historyAccuracy?.querySelector('.ui-icon'),'target');
+    const historyTotal=document.getElementById('historyTotalWords')?.closest('article');replace(historyTotal?.querySelector('.ui-icon'),'book');
   }
-  window.DinoIcons={mount,svg};
-  mount();
+  window.DinoIcons={mount,svg};mount();
   window.addEventListener('dino:wordbook-open',()=>setTimeout(mount,0));
   window.addEventListener('dino:view-change',()=>setTimeout(mount,0));
 })();
