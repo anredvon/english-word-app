@@ -1,6 +1,6 @@
 {
-  "name": "지훈이의 영어단어",
-  "short_name": "영어단어",
+  "name": "Dino Words",
+  "short_name": "Dino Words",
   "description": "매일 새 단어를 배우고, 퀴즈와 오답 복습으로 익히는 영어 단어 학습 앱",
   "start_url": "/?source=pwa",
   "display": "standalone",
