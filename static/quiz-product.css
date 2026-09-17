@@ -1,0 +1,2 @@
+/* R7-7 — iPad-first free quiz product surface. */
+#quizModal.modal{position:fixed;inset:0;z-index:140;display:grid;place-items:center;padding:28px}#quizModal.modal.hidden{display:none!important}#quizModal .modal-backdrop{position:absolute;inset:0;background:rgba(27,42,33,.36);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}#quizModal .quiz-modal{position:relative;z-index:1;width:min(760px,calc(100vw - 56px));max-height:calc(100dvh - 56px);overflow:auto;padding:30px 34px 34px;border:1px solid #dfe8e1;border-radius:30px;background:linear-gradient(180deg,#fc
