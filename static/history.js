@@ -15,3 +15,5 @@
   }catch(_){status.textContent='학습기록을 불러오지 못했어요.';document.getElementById('historyRecent').innerHTML='<div class="history-empty">잠시 후 다시 시도해 주세요.</div>';}}
   window.DinoHistory={load};
 })();
+/* Load the free-quiz interaction layer after app.js has initialized its legacy globals. */
+(() => {if(document.querySelector('script[data-quiz-product]'))return;const s=document.createElement('script');s.src='/static/quiz-product.js';s.defer=true;s.dataset.quizProduct='true';document.head.appendChild(s);})();
