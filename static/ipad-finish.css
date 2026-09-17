@@ -1,0 +1,27 @@
+/* R7-6 — final iPad hierarchy, spacing and mascot restraint. */
+@media(min-width:700px) and (max-width:1099px){
+  .redesign-shell header{position:sticky;top:0;z-index:80;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .home-view,.wordbook-view,.wrong-view,.history-view{padding-top:38px!important}
+  .home-greeting,.wordbook-head,.wrong-head,.history-head{margin-bottom:28px!important}
+  .home-greeting h2,.wordbook-head h2,.wrong-head h2,.history-head h2{margin-bottom:8px!important;letter-spacing:-.045em!important}
+  .home-greeting p,.wordbook-head p,.wrong-head p,.history-head p{max-width:650px!important;line-height:1.65!important}
+  .study-hero{margin-top:4px!important;box-shadow:0 16px 44px rgba(38,72,49,.07)!important}
+  .study-copy{padding:42px 42px!important}.study-copy h3{font-size:31px!important;line-height:1.22!important;letter-spacing:-.035em!important}.study-copy>p{max-width:470px!important;font-size:15px!important;line-height:1.65!important}
+  .home-progress{margin:25px 0 18px!important}.study-counts{gap:10px!important}.study-counts>div{min-width:124px!important;padding:14px 16px!important}
+  .home-study-btn{min-width:180px!important;min-height:56px!important;border-radius:16px!important}
+  .home-stats{margin-top:20px!important}.home-stats article{padding:20px!important}.review-preview{margin-top:34px!important}.review-preview h3{margin-bottom:15px!important}
+  .dino-companion{align-self:center!important}.dino-face-img{width:76px!important;height:68px!important;flex:0 0 76px!important}.dino-bubble{max-width:360px!important;padding:13px 17px!important;font-size:13px!important}
+  .hero-mascot{width:245px!important;height:245px!important;object-position:center bottom!important}
+  .study-top{margin-bottom:24px!important}.study-stage{padding-top:38px!important}.study-card{padding-top:42px!important}
+  .study-card>.card-mascot{width:96px!important;height:82px!important;margin:-18px auto 2px!important;opacity:.96!important}.review-mode .study-card>.card-mascot{width:88px!important;height:76px!important}
+  .study-card h2{letter-spacing:-.025em!important}.study-example{max-width:560px!important}
+  .wordbook-toolbar{margin-bottom:18px!important}.wordbook-list{gap:14px!important}.learner-word-card{box-shadow:0 6px 20px rgba(38,72,49,.045)!important}
+  .wrong-summary{margin-bottom:18px!important}.mastery-guide{margin:18px 0 16px!important}.wrong-list{gap:14px!important}
+  .history-summary{margin-bottom:20px!important}.history-card{margin-top:18px!important}.history-mascot{width:142px!important;height:126px!important;opacity:.94!important}
+  .manage-sheet{box-shadow:0 28px 90px rgba(28,45,34,.18)!important}
+}
+/* Mascots are supporting illustrations, not repeated decoration. */
+.study-card>.card-mascot{pointer-events:none}.study-card:not(.recall-card)>.card-mascot{opacity:.92}.wrong-card img,.learner-word-card img{max-width:100%}.home-stats img,.wrong-summary img{display:none!important}
+/* Consistent section rhythm on desktop too. */
+@media(min-width:1100px){.home-view,.wordbook-view,.wrong-view,.history-view{padding-top:42px!important}.home-greeting,.wordbook-head,.wrong-head,.history-head{margin-bottom:28px!important}.study-card>.card-mascot{width:90px!important;height:78px!important;margin:-16px auto 0!important}.hero-mascot{object-position:center bottom!important}}
+@media(max-width:699px){.dino-companion{gap:7px!important}.dino-face-img{width:54px!important;height:50px!important}.dino-bubble{padding:10px 12px!important;font-size:12px!important}.study-card>.card-mascot{width:68px!important;height:58px!important;margin:-7px auto 1px!important}.home-stats img,.wrong-summary img{display:none!important}}
