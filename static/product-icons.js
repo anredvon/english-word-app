@@ -1,28 +1,28 @@
-/* R8 Product Icon Set V1 — coherent 24px rounded outline system. */
+/* R8 Product Icon Set V2 — exact Lucide 24px geometry, one coherent rounded outline family. */
 (() => {
   const icons={
-    home:'<path d="M3.75 10.55 12 3.8l8.25 6.75v8.05a1.65 1.65 0 0 1-1.65 1.65H5.4a1.65 1.65 0 0 1-1.65-1.65Z"/><path d="M9.15 20.25v-6.1h5.7v6.1"/>',
-    book:'<path d="M4.2 5.15A2.65 2.65 0 0 1 6.85 2.5H11v17.1H6.85A2.65 2.65 0 0 0 4.2 22.25Z"/><path d="M19.8 5.15a2.65 2.65 0 0 0-2.65-2.65H13v17.1h4.15a2.65 2.65 0 0 1 2.65 2.65Z"/>',
-    review:'<path d="M19.55 7.35A8.35 8.35 0 1 0 20.2 14"/><path d="M19.6 3.9v4.9h-4.9"/><path d="m8.65 12.25 2.05 2.05 4.45-4.55"/>',
-    history:'<path d="M4.2 19.7h15.6"/><path d="M6.35 16.9v-4.1M11.05 16.9V8.95M15.75 16.9V5.4M20.1 4.15v15.6" opacity="0"/><path d="M5.4 7.6 9.15 5l3.2 2.15 5.75-4"/>',
-    search:'<circle cx="10.65" cy="10.65" r="6.15"/><path d="m15.25 15.25 4.5 4.5"/>',
-    cards:'<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M7.5 9h9M7.5 13h5.4"/>',
-    mistakes:'<path d="M12 3.45 21 19.4a1.05 1.05 0 0 1-.92 1.55H3.92A1.05 1.05 0 0 1 3 19.4Z"/><path d="M12 9v4.5M12 17.05v.1"/>',
-    award:'<circle cx="12" cy="9" r="5.25"/><path d="m8.65 13.05-1.2 7.1L12 17.6l4.55 2.55-1.2-7.1"/><path d="m9.9 9.1 1.35 1.35 2.9-3"/>',
-    plus:'<path d="M12 5v14M5 12h14"/>',
-    close:'<path d="m5.5 5.5 13 13M18.5 5.5l-13 13"/>',
-    back:'<path d="m14.8 5-7 7 7 7"/>',
-    speaker:'<path d="M4 9.1h3.4L12 5.4v13.2l-4.6-3.7H4Z"/><path d="M15.3 9a4.25 4.25 0 0 1 0 6M17.75 6.7a7.35 7.35 0 0 1 0 10.6"/>',
-    more:'<circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/>'
+    home:'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    book:'<path d="M12 5v16"/><path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/>',
+    review:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+    history:'<path d="M5 21v-6"/><path d="M12 21V9"/><path d="M19 21V3"/>',
+    search:'<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
+    cards:'<rect width="18" height="14" x="3" y="5" rx="2"/><path d="M7 9h10M7 13h6"/>',
+    mistakes:'<path d="M21.73 18 13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    award:'<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+    plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+    close:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    back:'<path d="m15 18-6-6 6-6"/>',
+    speaker:'<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/>',
+    more:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'
   };
   const svg=name=>`<span class="product-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${icons[name]||''}</svg></span>`;
-  const replace=(el,name)=>{if(!el||el.dataset.productIcon===name)return;el.innerHTML=svg(name);el.dataset.productIcon=name};
+  const replace=(el,name)=>{if(!el)return;el.innerHTML=svg(name);el.dataset.productIcon=name};
   function mount(){
     document.querySelectorAll('.app-nav-item').forEach(el=>replace(el.querySelector('.ui-icon'),el.dataset.view==='home'?'home':el.dataset.view==='wordbook'?'book':el.dataset.view==='wrong'?'review':'history'));
     replace(document.querySelector('.wordbook-search .ui-icon'),'search');
     const wrong=document.querySelectorAll('.wrong-summary article>span.ui-icon');replace(wrong[0],'cards');replace(wrong[1],'mistakes');replace(wrong[2],'award');
-    document.querySelectorAll('.word-more').forEach(el=>{el.textContent='';el.insertAdjacentHTML('beforeend',svg('more'));el.dataset.productIcon='more'});
-    document.querySelectorAll('.btn-speak').forEach(el=>{if(el.classList.contains('word-speak-icon'))return; if(!el.querySelector('.product-icon'))el.insertAdjacentHTML('afterbegin',svg('speaker'))});
+    document.querySelectorAll('.word-more').forEach(el=>replace(el,'more'));
+    document.querySelectorAll('.btn-speak').forEach(el=>{if(el.classList.contains('word-speak-icon'))return;const old=el.querySelector('.product-icon');if(old)old.remove();el.insertAdjacentHTML('afterbegin',svg('speaker'))});
   }
   window.DinoIcons={mount,svg};mount();window.addEventListener('dino:wordbook-open',()=>setTimeout(mount,0));
 })();
