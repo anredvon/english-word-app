@@ -1,13 +1,5 @@
 /* Final product consistency layer: truthful static copy + modal accessibility. */
 (() => {
-  const history=document.getElementById('historyView');
-  if(history){
-    const labels=history.querySelectorAll('.history-summary article small');
-    const copy=['최근 7일 등록','전체 풀이 기록','전체 정답률','전체 단어'];
-    labels.forEach((el,i)=>{if(copy[i])el.textContent=copy[i]});
-    const title=history.querySelector('.history-card h3');if(title)title.textContent='최근 단어 등록 흐름';
-    const note=history.querySelector('.history-note');if(note)note.textContent='※ 현재 버전은 학습 세션 날짜를 별도로 저장하지 않아요. 날짜 그래프는 단어 등록일만 표시하고, 풀이/정답률은 전체 누적 실제 기록만 표시해요.';
-  }
   const quizButton=document.getElementById('btnQuiz'),quiz=document.getElementById('quizModal'),quizClose=document.getElementById('quizClose');
   if(quizButton)quizButton.textContent='단어 퀴즈';
   if(quiz){
