@@ -4,8 +4,6 @@
    Style: Soft Glassmorphism + Vibrant Gradient
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Jua&display=swap');
-
 /* ===== 토큰 ===== */
 :root {
   --c1: #ff6b6b;
