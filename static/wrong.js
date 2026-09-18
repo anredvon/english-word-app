@@ -2,7 +2,7 @@
 (() => {
   const view=document.getElementById('wrongView'); if(!view)return;
   const num=v=>Number(v||0), esc=v=>String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  function mastery(w){const c=num(w.correct),x=num(w.wrong),n=c+x,r=n?c/n:0;if(n>=5&&r>=.85)return['마스터','master'];if(n>=3&&r>=.6)return['익숙해지는 중','growing'];return['배우는 중','learning'];}
+  function mastery(w){const c=num(w.correct),x=num(w.wrong),n=num(w.attempts)||c+x,r=n?c/n:0;if(!n)return['처음 만남','new'];if(n<2)return['배우는 중','learning'];if(n<3||r<.7)return['익숙해지는 중','growing'];if(r<.8)return['거의 암기','almost'];return['완전 암기','master'];}
   async function load(){
     const list=document.getElementById('wrongList'),status=document.getElementById('wrongStatus'); list.innerHTML='<div class="wrong-empty">복습할 단어를 확인하고 있어요…</div>';
     try{const r=await fetch('/api/stats/words');if(!r.ok)throw new Error();const all=await r.json();const words=all.filter(w=>num(w.wrong)>0).sort((a,b)=>num(b.wrong)-num(a.wrong)||num(a.correct)-num(b.correct));
