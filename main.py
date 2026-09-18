@@ -93,6 +93,26 @@ def api_history():
         with get_conn() as conn,conn.cursor() as cur:ensure_study_events(cur);cur.execute(sql,params);rows=cur.fetchall();conn.commit()
         return jsonify(rows)
     except Exception:return jsonify({"ok":False,"error":"DB 오류가 발생했습니다."}),500
+@app.get("/api/stats/words")
+def api_stats_words():
+    try:
+        with get_conn() as conn,conn.cursor() as cur:
+            ensure_study_events(cur)
+            cur.execute("""SELECT w.id,w.word,w.meaning,w.example,w.registered_on,
+                COUNT(se.id) attempts,
+                COALESCE(SUM(se.is_correct=1),0) correct,
+                COALESCE(SUM(se.is_correct=0),0) wrong,
+                MAX(se.studied_at) last_studied_at
+                FROM words w
+                LEFT JOIN study_events se ON se.word_id=w.id
+                GROUP BY w.id,w.word,w.meaning,w.example,w.registered_on
+                ORDER BY w.id DESC""")
+            rows=cur.fetchall();conn.commit()
+        for row in rows:
+            attempts=int(row.get("attempts") or 0);correct=int(row.get("correct") or 0)
+            row["accuracy"]=round(correct*100/attempts,1) if attempts else None
+        return jsonify(rows)
+    except Exception:return jsonify({"ok":False,"error":"DB 오류가 발생했습니다."}),500
 @app.get("/api/stats/summary")
 def api_stats_summary():
     try:
