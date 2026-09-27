@@ -30,3 +30,6 @@
 .history-card{border:1px solid #e0e9e2!important;box-shadow:0 8px 28px rgba(39,73,51,.045)!important}.history-row{border-color:#e5ece7!important}
 @media(min-width:700px) and (max-width:1099px){.home-view,.wordbook-view,.wrong-view,.history-view{padding-left:36px!important;padding-right:36px!important}.study-hero{grid-template-columns:minmax(0,1.12fr) minmax(270px,.88fr)!important}.home-stats{gap:14px!important}.home-stats article{min-height:120px!important;border-radius:24px!important}.study-stage{padding-left:16px!important;padding-right:16px!important}.study-card{min-height:500px!important}}
 @media(max-width:699px){.study-hero{border-radius:26px!important}.home-greeting h2{font-size:29px!important;line-height:1.22!important}.home-greeting p{line-height:1.6!important}.study-card,.handwriting-card{border-radius:25px!important}.study-card{padding-left:22px!important;padding-right:22px!important}}
+
+/* Dino Mission — lightweight completion reward for elementary learners. */
+.mission-stars{margin:2px 0 8px;color:#e4a62f;font:900 21px/1 Nunito,sans-serif;letter-spacing:.18em;text-align:center}.result-card .mission-stars+h2{margin-top:0!important}
