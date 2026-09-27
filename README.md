@@ -18,4 +18,4 @@
 7. 학습기록의 완전 암기·성장 중·복습 필요 수치 확인
 8. 홈 Dino 정원 단계가 기록 화면과 일치하는지 확인
 
-Current PWA cache baseline: **v56**
+Current PWA cache baseline: **v59**
